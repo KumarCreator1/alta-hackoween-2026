@@ -655,6 +655,7 @@ export default function ARMCommandCenter() {
             <FleetView
               resources={filteredResources}
               farms={farms}
+              tasks={tasks}
               onUpdateResource={handleUpdateResource}
               onAddResource={handleAddResource}
               onDeleteResource={handleDeleteResource}
