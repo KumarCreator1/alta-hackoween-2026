@@ -76,9 +76,9 @@ export default function SectorsView({
       {/* View Header with Multi-Farm Management */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-stone-900">Centralized Multi-Farm Sectors</h2>
+          <h2 className="text-xl font-bold text-stone-900">Farms & Field Locations</h2>
           <p className="text-xs text-stone-500 mt-0.5">
-            Real-time acreage telemetry, soil chemistry envelopes, irrigation rigs & appointed assets across {farms.length} locations
+            Field size, soil moisture, appointed equipment, and tasks across your {farms.length} farms
           </p>
         </div>
 

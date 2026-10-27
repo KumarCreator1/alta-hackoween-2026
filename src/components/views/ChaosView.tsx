@@ -61,9 +61,9 @@ export default function ChaosView({
       {/* View Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-stone-900 tracking-tight">Environmental Anomaly & Risk Simulator</h2>
+          <h2 className="text-xl font-bold text-stone-900 tracking-tight">Weather & Equipment Test Lab</h2>
           <p className="text-xs text-stone-500 mt-0.5">
-            Deterministic incident triggers and multimodal foliage vision workbench across {farms.length} sectors
+            Test how weather changes, crop disease, and machinery repairs adjust farm schedules
           </p>
         </div>
         <span className="text-xs font-mono font-bold px-3 py-1 bg-stone-100 text-stone-800 rounded border border-stone-300">
@@ -119,7 +119,7 @@ export default function ChaosView({
             </div>
             <h3 className="text-sm font-bold text-stone-900">Implement Hydraulic Fault</h3>
             <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-              Simulates critical CAN-bus pressure drop on <strong>Machinery Implement</strong> at {alphaLabel}. Flags asset for service and routes standby machinery.
+              Simulates equipment breakdown on <strong>Machinery</strong> at {alphaLabel}. Flags asset for repair and routes standby machinery.
             </p>
           </div>
           <button

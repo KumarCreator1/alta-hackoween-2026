@@ -2,172 +2,164 @@ import { db } from './index';
 import { farms, resources, tasks, incidentTickets, eventLogs } from './schema';
 import type { NewFarm, NewResource, NewTask, NewEventLog } from './schema';
 
-// ── Multi-Farm Enterprise Seed Data ───────────────────────────────────────────
+// ── Multi-Farm Plain-Language Seed Data ───────────────────────────────────────
 
 const seedFarms: NewFarm[] = [
   {
-    name: 'Sector Alpha - North Valley',
-    code: 'SEC-01',
-    region: 'Sacramento Basin, CA',
+    name: 'North Valley Farm',
+    code: 'North Farm',
+    region: 'Sacramento, CA',
     soilMoisture: 42,
     targetMoistureMin: 40,
     targetMoistureMax: 65,
-    soilType: 'Silt Loam',
+    soilType: 'Rich Loam',
     soilPh: '6.7',
     weatherStatus: 'Partly Cloudy, 28°C',
     coordinates: { x: 120, y: 150 },
     acreage: 450,
-    cropType: 'Winter Wheat & Soybeans',
+    cropType: 'Wheat & Soybeans',
     tempCelsius: 28,
     windSpeedKmh: 12,
-    irrigationType: 'CENTER_PIVOT',
+    irrigationType: 'Center Pivot Sprinkler',
     healthScore: 94,
   },
   {
-    name: 'Sector Beta - High Plains',
-    code: 'SEC-02',
-    region: 'Amarillo Region, TX',
+    name: 'High Plains Farm',
+    code: 'Plains Farm',
+    region: 'Amarillo, TX',
     soilMoisture: 64,
     targetMoistureMin: 45,
     targetMoistureMax: 70,
-    soilType: 'Sandy Loam',
+    soilType: 'Sandy Soil',
     soilPh: '7.1',
     weatherStatus: 'Clear Skies, 32°C',
     coordinates: { x: 380, y: 100 },
     acreage: 720,
-    cropType: 'Sweet Corn & Sorghum',
+    cropType: 'Corn & Sorghum',
     tempCelsius: 32,
     windSpeedKmh: 18,
-    irrigationType: 'DRIP_MICRO',
+    irrigationType: 'Drip Pipe Lines',
     healthScore: 91,
   },
   {
-    name: 'Sector Gamma - Delta Basin',
-    code: 'SEC-03',
+    name: 'Delta River Farm',
+    code: 'Delta Farm',
     region: 'Mississippi Delta, MS',
     soilMoisture: 52,
     targetMoistureMin: 50,
     targetMoistureMax: 75,
-    soilType: 'Clay Loam',
+    soilType: 'Clay Soil',
     soilPh: '6.4',
     weatherStatus: 'Humid, 29°C',
     coordinates: { x: 620, y: 160 },
     acreage: 580,
-    cropType: 'Organic Cotton & Rice',
+    cropType: 'Cotton & Rice',
     tempCelsius: 29,
     windSpeedKmh: 8,
-    irrigationType: 'FLOOD_GATE',
+    irrigationType: 'Flood Canal Gates',
     healthScore: 96,
   },
   {
-    name: 'Sector Delta - Highland Orchards',
-    code: 'SEC-04',
+    name: 'Highland Orchard',
+    code: 'Orchard Farm',
     region: 'Yakima Valley, WA',
     soilMoisture: 75,
     targetMoistureMin: 55,
     targetMoistureMax: 80,
-    soilType: 'Volcanic Ash Loam',
+    soilType: 'Ash Soil',
     soilPh: '6.2',
     weatherStatus: 'Cool Breeze, 22°C',
     coordinates: { x: 420, y: 240 },
     acreage: 320,
-    cropType: 'Honeycrisp Apples & Cherries',
+    cropType: 'Apples & Cherries',
     tempCelsius: 22,
     windSpeedKmh: 15,
-    irrigationType: 'DRONE_AERIAL',
+    irrigationType: 'Drone Spraying',
     healthScore: 98,
   },
 ];
 
 export async function seedDatabase(): Promise<void> {
-  console.log('[LOG][LOG] Seeding centralized multi-farm enterprise database...');
+  console.log('[LOG] Seeding clean human-friendly farm database...');
 
-  // 1. Clear tables in reverse FK order
+  // 1. Clear tables
   await db.delete(eventLogs);
   await db.delete(incidentTickets);
   await db.delete(tasks);
   await db.delete(resources);
   await db.delete(farms);
 
-  console.log('  [LOG] Cleared legacy demo data');
-
-  // 2. Insert Centralized Farms
+  // 2. Insert Farms
   const insertedFarms = await db.insert(farms).values(seedFarms).returning();
   const [farm1, farm2, farm3, farm4] = insertedFarms;
-  console.log(`  [LOG] Seeded ${insertedFarms.length} enterprise farms across 4 regions`);
 
-  // 3. Insert Appointed Machinery & Agronomic Employees
+  // 3. Insert Simple Human Equipment & Workers
   const enterpriseResources: NewResource[] = [
-    // Sector Alpha
-    { name: 'John Deere 8R - Unit 01', type: 'TRACTOR', status: 'BUSY', currentFarmId: farm1.id, fuelOrBattery: 78, model: '8R 410 HP RTK Guidance', serialNumber: 'JD-8R-9901', speedKmh: 14, implementStatus: '12-Row Tiller Active', engineHours: 1240, maxPayloadKg: 4500 },
-    { name: 'Kubota Sprayer Rig 02', type: 'HARVESTER', status: 'IDLE', currentFarmId: farm1.id, fuelOrBattery: 95, model: 'M7-172 Premium KVT', serialNumber: 'KB-SP-4402', speedKmh: 0, implementStatus: '24m Boom Folded', engineHours: 680, maxPayloadKg: 3200 },
-    { name: 'Rohan Verma', type: 'WORKER', status: 'BUSY', currentFarmId: farm1.id, fuelOrBattery: 100, model: 'Lead Operations Agronomist', serialNumber: 'EMP-014', speedKmh: 5, implementStatus: 'Digital Crop Scout Rig', engineHours: 320, maxPayloadKg: 80 },
+    // North Farm
+    { name: 'Tractor 1 (Plow)', type: 'TRACTOR', status: 'BUSY', currentFarmId: farm1.id, fuelOrBattery: 78, model: 'Main Field Tractor', serialNumber: 'TR-01', speedKmh: 14, implementStatus: 'Plow Hooked Up', engineHours: 1240, maxPayloadKg: 4500 },
+    { name: 'Field Sprayer', type: 'HARVESTER', status: 'IDLE', currentFarmId: farm1.id, fuelOrBattery: 95, model: 'Boom Sprayer Rig', serialNumber: 'SP-01', speedKmh: 0, implementStatus: 'Boom Folded & Clean', engineHours: 680, maxPayloadKg: 3200 },
+    { name: 'Rohan (Manager)', type: 'WORKER', status: 'BUSY', currentFarmId: farm1.id, fuelOrBattery: 100, model: 'Field Operator', serialNumber: 'W-01', speedKmh: 5, implementStatus: 'Field Check Kit', engineHours: 320, maxPayloadKg: 80 },
 
-    // Sector Beta
-    { name: 'John Deere 8R - Unit 04', type: 'TRACTOR', status: 'IDLE', currentFarmId: farm2.id, fuelOrBattery: 88, model: '8R 370 HP Variable Rate', serialNumber: 'JD-8R-9904', speedKmh: 0, implementStatus: 'Precision Planter Standby', engineHours: 890, maxPayloadKg: 4500 },
-    { name: 'DJI Agras T30 - Drone 01', type: 'DRONE', status: 'BUSY', currentFarmId: farm2.id, fuelOrBattery: 62, model: 'Agras T30 Hexacopter RTK', serialNumber: 'DJI-T30-01', speedKmh: 24, implementStatus: 'NDVI Multispectral Scanning', engineHours: 190, maxPayloadKg: 40 },
-    { name: 'Priya Sharma', type: 'WORKER', status: 'IDLE', currentFarmId: farm2.id, fuelOrBattery: 100, model: 'Field Sensor Specialist', serialNumber: 'EMP-022', speedKmh: 0, implementStatus: 'Soil Core Probe Kit', engineHours: 210, maxPayloadKg: 80 },
+    // Plains Farm
+    { name: 'Tractor 2 (Planter)', type: 'TRACTOR', status: 'IDLE', currentFarmId: farm2.id, fuelOrBattery: 88, model: 'Seed Planting Tractor', serialNumber: 'TR-02', speedKmh: 0, implementStatus: 'Seed Planter Standby', engineHours: 890, maxPayloadKg: 4500 },
+    { name: 'Drone 1 (Camera)', type: 'DRONE', status: 'BUSY', currentFarmId: farm2.id, fuelOrBattery: 62, model: 'Field Scouting Drone', serialNumber: 'DR-01', speedKmh: 24, implementStatus: 'Camera Scanning Crops', engineHours: 190, maxPayloadKg: 40 },
+    { name: 'Priya (Worker)', type: 'WORKER', status: 'IDLE', currentFarmId: farm2.id, fuelOrBattery: 100, model: 'Crop Scout', serialNumber: 'W-02', speedKmh: 0, implementStatus: 'Soil Testing Kit', engineHours: 210, maxPayloadKg: 80 },
 
-    // Sector Gamma
-    { name: 'Case IH Steiger 620', type: 'TRACTOR', status: 'BUSY', currentFarmId: farm3.id, fuelOrBattery: 85, model: 'Steiger Quadtrac 620', serialNumber: 'CIH-620-77', speedKmh: 11, implementStatus: 'Laser Land Leveler Active', engineHours: 1560, maxPayloadKg: 6000 },
-    { name: 'Hagie STS16 Sprayer', type: 'HARVESTER', status: 'IDLE', currentFarmId: farm3.id, fuelOrBattery: 92, model: 'STS16 High-Clearance 120ft', serialNumber: 'HAG-16-08', speedKmh: 0, implementStatus: 'Spray Tanks Cleaned', engineHours: 410, maxPayloadKg: 6200 },
-    { name: 'Marcus Vance', type: 'WORKER', status: 'BUSY', currentFarmId: farm3.id, fuelOrBattery: 95, model: 'Irrigation & Drainage Supervisor', serialNumber: 'EMP-031', speedKmh: 8, implementStatus: 'Flood Gate Automation Rig', engineHours: 440, maxPayloadKg: 80 },
+    // Delta Farm
+    { name: 'Big Tractor (Leveler)', type: 'TRACTOR', status: 'BUSY', currentFarmId: farm3.id, fuelOrBattery: 85, model: 'Heavy Track Tractor', serialNumber: 'TR-03', speedKmh: 11, implementStatus: 'Dirt Leveler Attached', engineHours: 1560, maxPayloadKg: 6000 },
+    { name: 'High Sprayer', type: 'HARVESTER', status: 'IDLE', currentFarmId: farm3.id, fuelOrBattery: 92, model: 'Tall Crop Sprayer', serialNumber: 'SP-02', speedKmh: 0, implementStatus: 'Clean Water in Tank', engineHours: 410, maxPayloadKg: 6200 },
+    { name: 'Marcus (Water Tech)', type: 'WORKER', status: 'BUSY', currentFarmId: farm3.id, fuelOrBattery: 95, model: 'Irrigation Lead', serialNumber: 'W-03', speedKmh: 8, implementStatus: 'Water Gate Keys', engineHours: 440, maxPayloadKg: 80 },
 
-    // Sector Delta
-    { name: 'Fendt 1050 Vario', type: 'TRACTOR', status: 'IDLE', currentFarmId: farm4.id, fuelOrBattery: 90, model: '1050 Vario Orchard Edition', serialNumber: 'FND-1050-2', speedKmh: 0, implementStatus: 'Orchard Flail Mower Standby', engineHours: 730, maxPayloadKg: 4800 },
-    { name: 'XAG P100 Pro Drone', type: 'DRONE', status: 'IDLE', currentFarmId: farm4.id, fuelOrBattery: 100, model: 'P100 Pro Agricultural Quadcopter', serialNumber: 'XAG-P100-3', speedKmh: 0, implementStatus: 'Bio-Fungicide Payload Ready', engineHours: 85, maxPayloadKg: 50 },
-    { name: 'Elena Rostova', type: 'WORKER', status: 'IDLE', currentFarmId: farm4.id, fuelOrBattery: 100, model: 'Plant Pathology Director', serialNumber: 'EMP-045', speedKmh: 0, implementStatus: 'Microscopic Disease Assay', engineHours: 180, maxPayloadKg: 80 },
+    // Orchard Farm
+    { name: 'Orchard Tractor', type: 'TRACTOR', status: 'IDLE', currentFarmId: farm4.id, fuelOrBattery: 90, model: 'Narrow Tree Tractor', serialNumber: 'TR-04', speedKmh: 0, implementStatus: 'Grass Mower Attached', engineHours: 730, maxPayloadKg: 4800 },
+    { name: 'Drone 2 (Sprayer)', type: 'DRONE', status: 'IDLE', currentFarmId: farm4.id, fuelOrBattery: 100, model: 'Tree Spraying Drone', serialNumber: 'DR-02', speedKmh: 0, implementStatus: 'Fungicide Loaded', engineHours: 85, maxPayloadKg: 50 },
+    { name: 'Elena (Inspector)', type: 'WORKER', status: 'IDLE', currentFarmId: farm4.id, fuelOrBattery: 100, model: 'Tree Inspector', serialNumber: 'W-04', speedKmh: 0, implementStatus: 'Magnifying Scope', engineHours: 180, maxPayloadKg: 80 },
   ];
 
   const insertedResources = await db.insert(resources).values(enterpriseResources).returning();
-  console.log(`  [LOG] Seeded ${insertedResources.length} appointed machinery and field personnel`);
 
-  // 4. Insert Work Orders across all 4 locations
+  // 4. Insert Simple Human Tasks
   const enterpriseTasks: NewTask[] = [
-    // Sector Alpha Tasks
-    { title: 'Till North Field - Section A3', farmId: farm1.id, assignedResourceId: insertedResources[0].id, status: 'IN_PROGRESS', priority: 1, scheduledSlot: '06:00 - 08:30', aiReasoning: 'Soil moisture optimal for minimum compaction tilling at dawn', category: 'TILLAGE', progressPercent: 65, fieldSection: 'Section A3', targetHectares: 35 },
-    { title: 'Spray Herbicide - Perimeter Zone', farmId: farm1.id, assignedResourceId: insertedResources[1].id, status: 'SCHEDULED', priority: 2, scheduledSlot: '09:00 - 11:00', aiReasoning: 'Wind speed below 15 km/h threshold until 11:00', category: 'SPRAYING', progressPercent: 0, fieldSection: 'Perimeter West', targetHectares: 18 },
-    { title: 'Inspect Drip Emitters & Soil Tension', farmId: farm1.id, assignedResourceId: insertedResources[2].id, status: 'IN_PROGRESS', priority: 3, scheduledSlot: '08:00 - 10:30', aiReasoning: 'Scheduled moisture sensor calibration verification', category: 'IRRIGATION', progressPercent: 40, fieldSection: 'Pivot Zone 1', targetHectares: 50 },
+    // North Farm Tasks
+    { title: 'Plow North Field', farmId: farm1.id, assignedResourceId: insertedResources[0].id, status: 'IN_PROGRESS', priority: 1, scheduledSlot: '06:00 - 08:30', aiReasoning: 'Ground is dry enough to plow without packing the mud.', category: 'Plowing', progressPercent: 65, fieldSection: 'Field A', targetHectares: 35 },
+    { title: 'Spray Weeds around Fences', farmId: farm1.id, assignedResourceId: insertedResources[1].id, status: 'SCHEDULED', priority: 2, scheduledSlot: '09:00 - 11:00', aiReasoning: 'Wind is calm right now. Good time to spray before it gets windy.', category: 'Spraying', progressPercent: 0, fieldSection: 'West Fence', targetHectares: 18 },
+    { title: 'Check Water Pipes & Drip Lines', farmId: farm1.id, assignedResourceId: insertedResources[2].id, status: 'IN_PROGRESS', priority: 3, scheduledSlot: '08:00 - 10:30', aiReasoning: 'Scheduled routine check on sprinkler nozzles.', category: 'Watering', progressPercent: 40, fieldSection: 'Sprinkler Line 1', targetHectares: 50 },
 
-    // Sector Beta Tasks
-    { title: 'Aerial NDVI Crop Health Scan', farmId: farm2.id, assignedResourceId: insertedResources[4].id, status: 'IN_PROGRESS', priority: 1, scheduledSlot: '07:00 - 09:30', aiReasoning: 'Sun angle optimal for multispectral NDVI reflection indices', category: 'SURVEY', progressPercent: 80, fieldSection: 'Grid B1-B8', targetHectares: 90 },
-    { title: 'Variable-Rate Nitrogen Application', farmId: farm2.id, assignedResourceId: insertedResources[3].id, status: 'SCHEDULED', priority: 2, scheduledSlot: '10:00 - 13:00', aiReasoning: 'Zone C2 nitrogen deficiency flagged by previous drone pass', category: 'SPRAYING', progressPercent: 0, fieldSection: 'Zone C2', targetHectares: 45 },
+    // Plains Farm Tasks
+    { title: 'Drone Check for Crop Disease', farmId: farm2.id, assignedResourceId: insertedResources[4].id, status: 'IN_PROGRESS', priority: 1, scheduledSlot: '07:00 - 09:30', aiReasoning: 'Clear morning sunlight gives good drone photos of the crop.', category: 'Drone Scouting', progressPercent: 80, fieldSection: 'Corn Block B', targetHectares: 90 },
+    { title: 'Fertilize Corn Field', farmId: farm2.id, assignedResourceId: insertedResources[3].id, status: 'SCHEDULED', priority: 2, scheduledSlot: '10:00 - 13:00', aiReasoning: 'Drone photos showed pale patches that need extra plant food.', category: 'Fertilizing', progressPercent: 0, fieldSection: 'East Corn Patch', targetHectares: 45 },
 
-    // Sector Gamma Tasks
-    { title: 'Laser Land Leveling - Paddy C4', farmId: farm3.id, assignedResourceId: insertedResources[6].id, status: 'IN_PROGRESS', priority: 1, scheduledSlot: '06:30 - 11:00', aiReasoning: 'Grading precision required before seasonal flood irrigation', category: 'TILLAGE', progressPercent: 50, fieldSection: 'Paddy C4', targetHectares: 60 },
-    { title: 'Foliar Bio-Stimulant Spraying', farmId: farm3.id, assignedResourceId: insertedResources[7].id, status: 'SCHEDULED', priority: 2, scheduledSlot: '13:30 - 16:30', aiReasoning: 'High humidity window enhances cuticular absorption', category: 'SPRAYING', progressPercent: 0, fieldSection: 'Paddy Delta 2', targetHectares: 40 },
+    // Delta Farm Tasks
+    { title: 'Level Mud in Rice Field', farmId: farm3.id, assignedResourceId: insertedResources[6].id, status: 'IN_PROGRESS', priority: 1, scheduledSlot: '06:30 - 11:00', aiReasoning: 'Ground needs to be flat so water spreads evenly across the crop.', category: 'Plowing', progressPercent: 50, fieldSection: 'Rice Paddy 4', targetHectares: 60 },
+    { title: 'Spray Liquid Plant Vitamins', farmId: farm3.id, assignedResourceId: insertedResources[7].id, status: 'SCHEDULED', priority: 2, scheduledSlot: '13:30 - 16:30', aiReasoning: 'High humidity helps the leaves soak up the fertilizer.', category: 'Spraying', progressPercent: 0, fieldSection: 'Cotton Block 2', targetHectares: 40 },
 
-    // Sector Delta Tasks
-    { title: 'Canopy Disease Scout & Soil Sampling', farmId: farm4.id, assignedResourceId: insertedResources[11].id, status: 'SCHEDULED', priority: 2, scheduledSlot: '09:30 - 12:00', aiReasoning: 'Weekly inspection for early powdery mildew fungal spore development', category: 'SURVEY', progressPercent: 0, fieldSection: 'Orchard Ridge 3', targetHectares: 25 },
-    { title: 'Targeted Orchard Micro-Spraying', farmId: farm4.id, assignedResourceId: insertedResources[10].id, status: 'SCHEDULED', priority: 3, scheduledSlot: '14:00 - 15:30', aiReasoning: 'Autonomous drone flight path calibrated for orchard spacing', category: 'SPRAYING', progressPercent: 0, fieldSection: 'Orchard Block A', targetHectares: 15 },
+    // Orchard Farm Tasks
+    { title: 'Check Apple Trees for Fungus', farmId: farm4.id, assignedResourceId: insertedResources[11].id, status: 'SCHEDULED', priority: 2, scheduledSlot: '09:30 - 12:00', aiReasoning: 'Weekly walk through the rows to look for white mold on leaves.', category: 'Inspecting', progressPercent: 0, fieldSection: 'Honeycrisp Hill', targetHectares: 25 },
+    { title: 'Spray Insect Protection on Apples', farmId: farm4.id, assignedResourceId: insertedResources[10].id, status: 'SCHEDULED', priority: 3, scheduledSlot: '14:00 - 15:30', aiReasoning: 'Drone flight path mapped between the tree rows.', category: 'Spraying', progressPercent: 0, fieldSection: 'Orchard Row 3', targetHectares: 15 },
   ];
 
-  const insertedTasks = await db.insert(tasks).values(enterpriseTasks).returning();
-  console.log(`  [LOG] Seeded ${insertedTasks.length} active field operations`);
+  await db.insert(tasks).values(enterpriseTasks);
 
-  // 5. Insert Initial Telemetry Stream
+  // 5. Initial Log Stream
   const initialLogs: NewEventLog[] = [
-    { level: 'INFO', emoji: '[LOG][LOG]', message: 'PARALLAX ARM Enterprise Command Center — 4 Sectors Online', farmId: null, relatedTicketId: null },
-    { level: 'INFO', emoji: '[LOG][LOG]', message: 'Connected 4 geographically distributed farming hubs (CA, TX, MS, WA)', farmId: null, relatedTicketId: null },
-    { level: 'DISPATCH', emoji: '[LOG][LOG]', message: 'Tractor 8R Unit 01 engaged in Section A3 (Tillage 65% complete)', farmId: farm1.id, relatedTicketId: null },
-    { level: 'DISPATCH', emoji: '[LOG][LOG]', message: 'DJI Agras T30 airborne over Sector Beta (NDVI scan 80% complete)', farmId: farm2.id, relatedTicketId: null },
-    { level: 'DISPATCH', emoji: '[LOG][LOG]', message: 'Case IH Steiger 620 laser leveling Paddy C4 (Sector Gamma)', farmId: farm3.id, relatedTicketId: null },
-    { level: 'AI', emoji: '[LOG][LOG]', message: 'Gemini 3.8 Flash multi-farm reasoning online. Telemetry monitoring nominal.', farmId: null, relatedTicketId: null },
+    { level: 'INFO', emoji: '[SYSTEM]', message: 'Farm Operations Online — 4 Farms Connected (North, Plains, Delta, Orchard)', farmId: null, relatedTicketId: null },
+    { level: 'DISPATCH', emoji: '[DISPATCH]', message: 'Tractor 1 started plowing Field A (North Farm)', farmId: farm1.id, relatedTicketId: null },
+    { level: 'DISPATCH', emoji: '[DISPATCH]', message: 'Drone 1 flying over Corn Block B taking crop health photos', farmId: farm2.id, relatedTicketId: null },
+    { level: 'INFO', emoji: '[WEATHER]', message: 'Weather clear across all farms. Soil conditions ready for field work.', farmId: null, relatedTicketId: null },
   ];
 
   await db.insert(eventLogs).values(initialLogs);
-  console.log('  [LOG] Seeded enterprise telemetry event stream');
-  console.log('[LOG][LOG] Enterprise Multi-Farm Database Successfully Initialized!');
+  console.log('[LOG] Database successfully seeded with human-readable farm names!');
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
   seedDatabase()
     .then(() => {
-      console.log('[LOG] Standalone seed complete');
+      console.log('Standalone seed finished');
       process.exit(0);
     })
     .catch((err) => {
-      console.error('[LOG] Seed failed:', err);
+      console.error('Seed failed:', err);
       process.exit(1);
     });
 }

@@ -31,7 +31,7 @@ export interface ConstraintAuditResult {
 }
 
 /**
- * Evaluates the 4 core agronomic constraints for a given sector
+ * Evaluates weather & soil conditions for a farm using simple, plain-English rules
  */
 export function evaluateSectorConstraints(farm: Farm, farmTasks: Task[] = []): SectorConstraintReport {
   const weather = (farm.weatherStatus || '').toLowerCase();
@@ -48,116 +48,116 @@ export function evaluateSectorConstraints(farm: Farm, farmTasks: Task[] = []): S
 
   const constraints: ConstraintEvaluation[] = [];
 
-  // 1. Chemical Wash-off Constraint (Category: SPRAYING / FERTILIZATION)
+  // 1. Rain Wash-off (Spraying & Fertilizing)
   if (isRainForecast) {
     constraints.push({
       type: 'WASH_OFF',
-      name: 'Chemical Wash-Off Hazard',
+      name: 'Rain Wash-off Alert',
       severity: 'LOCKED_OUT',
-      category: 'SPRAYING',
-      threshold: '0% Rain in 4h Window',
+      category: 'Spraying',
+      threshold: 'No rain forecast',
       currentValue: farm.weatherStatus,
-      reason: 'Precipitation forecast will wash active pesticide/fungicide into runoff prior to 4-hour absorption.',
+      reason: 'Rain is coming soon. Spraying now will wash the medicine away and waste your money. Paused until rain clears.',
     });
   } else {
     constraints.push({
       type: 'WASH_OFF',
-      name: 'Chemical Wash-Off Hazard',
+      name: 'Rain Wash-off Alert',
       severity: 'SAFE',
-      category: 'SPRAYING',
-      threshold: '0% Rain in 4h Window',
+      category: 'Spraying',
+      threshold: 'No rain forecast',
       currentValue: farm.weatherStatus || 'Clear',
-      reason: 'No precipitation forecast; safe absorption window open.',
+      reason: 'No rain in sight. Safe to spray.',
     });
   }
 
-  // 2. Wind Drift Velocity Constraint (Category: SPRAYING)
+  // 2. High Wind (Spraying)
   if (wind > 20) {
     constraints.push({
       type: 'WIND_DRIFT',
-      name: 'Spray Droplet Drift Hazard',
+      name: 'High Wind Warning',
       severity: 'LOCKED_OUT',
-      category: 'SPRAYING',
-      threshold: 'Max 15 km/h',
+      category: 'Spraying',
+      threshold: 'Below 15 km/h',
       currentValue: `${wind} km/h`,
-      reason: `Wind velocity (${wind} km/h) exceeds 20 km/h critical ceiling; severe off-target droplet dispersion.`,
+      reason: `Too windy (${wind} km/h). The spray will blow away onto neighboring fences instead of your crop.`,
     });
   } else if (wind > 15) {
     constraints.push({
       type: 'WIND_DRIFT',
-      name: 'Spray Droplet Drift Hazard',
+      name: 'Wind Advisory',
       severity: 'WARNING',
-      category: 'SPRAYING',
-      threshold: 'Max 15 km/h',
+      category: 'Spraying',
+      threshold: 'Below 15 km/h',
       currentValue: `${wind} km/h`,
-      reason: `Wind velocity (${wind} km/h) exceeds 15 km/h advisory limit; use low-drift air-induction nozzles.`,
+      reason: `Getting breezy (${wind} km/h). Keep spray nozzles close to the crop.`,
     });
   } else {
     constraints.push({
       type: 'WIND_DRIFT',
-      name: 'Spray Droplet Drift Hazard',
+      name: 'Wind Speed',
       severity: 'SAFE',
-      category: 'SPRAYING',
-      threshold: 'Max 15 km/h',
+      category: 'Spraying',
+      threshold: 'Below 15 km/h',
       currentValue: `${wind} km/h`,
-      reason: 'Wind velocity nominal for standard boom application.',
+      reason: 'Wind is calm. Perfect conditions for spraying.',
     });
   }
 
-  // 3. Soil Structural Compaction Constraint (Category: TILLAGE / HARVESTING)
-  const isSaturated = moisture > maxMoisture + 5 || (moisture > 70 && isRainForecast);
-  if (isSaturated) {
+  // 3. Muddy Soil (Plowing / Heavy Tractors)
+  const isMuddy = moisture > maxMoisture + 5 || (moisture > 70 && isRainForecast);
+  if (isMuddy) {
     constraints.push({
       type: 'SOIL_COMPACTION',
-      name: 'Subsoil Plow Pan Compaction',
+      name: 'Muddy Soil Alert',
       severity: 'LOCKED_OUT',
-      category: 'TILLAGE',
-      threshold: `Max ${maxMoisture}% Moisture`,
+      category: 'Plowing',
+      threshold: `Under ${maxMoisture}% Moisture`,
       currentValue: `${moisture}%`,
-      reason: `Soil moisture (${moisture}%) exceeds safe axle limit (${maxMoisture}%); heavy tractors risk irreversible compaction.`,
+      reason: `Soil is too wet and muddy (${moisture}%). Heavy tractors will get stuck and pack the mud hard. Let it dry first.`,
     });
   } else if (moisture > maxMoisture) {
     constraints.push({
       type: 'SOIL_COMPACTION',
-      name: 'Subsoil Plow Pan Compaction',
+      name: 'Damp Soil Advisory',
       severity: 'WARNING',
-      category: 'TILLAGE',
-      threshold: `Max ${maxMoisture}% Moisture`,
+      category: 'Plowing',
+      threshold: `Under ${maxMoisture}% Moisture`,
       currentValue: `${moisture}%`,
-      reason: `Soil moisture (${moisture}%) marginally elevated; operate dual-wheel low-pressure tires.`,
+      reason: `Soil is damp (${moisture}%). Drive carefully to avoid rutting.`,
     });
   } else {
     constraints.push({
       type: 'SOIL_COMPACTION',
-      name: 'Subsoil Plow Pan Compaction',
+      name: 'Soil Condition',
       severity: 'SAFE',
-      category: 'TILLAGE',
-      threshold: `Max ${maxMoisture}% Moisture`,
+      category: 'Plowing',
+      threshold: `Under ${maxMoisture}% Moisture`,
       currentValue: `${moisture}%`,
-      reason: 'Soil tension optimal for tillage and seeding without shear damage.',
+      reason: 'Ground is dry and firm. Ready to plow and seed.',
     });
   }
 
-  // 4. Aerial Drone Envelope Constraint (Category: SURVEY)
+  // 4. Drone Flying Conditions
   if (wind > 22 || isRainForecast) {
     constraints.push({
       type: 'DRONE_ENVELOPE',
-      name: 'UAV Flight Envelope Limits',
+      name: 'Drone Flight Alert',
       severity: 'LOCKED_OUT',
-      category: 'SURVEY',
-      threshold: 'Max 22 km/h & No Rain',
-      currentValue: `${wind} km/h, ${farm.weatherStatus}`,
-      reason: `Environmental parameters exceed agricultural hexacopter stability and gimbal precision envelope.`,
+      category: 'Drone Scouting',
+      threshold: 'Calm & No Rain',
+      currentValue: `${wind} km/h`,
+      reason: `Gusty wind (${wind} km/h) or rain. Drones cannot fly safely in these conditions.`,
     });
   } else {
     constraints.push({
       type: 'DRONE_ENVELOPE',
-      name: 'UAV Flight Envelope Limits',
+      name: 'Drone Flight Weather',
       severity: 'SAFE',
-      category: 'SURVEY',
-      threshold: 'Max 22 km/h & No Rain',
+      category: 'Drone Scouting',
+      threshold: 'Calm & No Rain',
       currentValue: `${wind} km/h`,
-      reason: 'Flight corridor clear for RTK multispectral surveys.',
+      reason: 'Calm skies. Safe for drone flying and crop photos.',
     });
   }
 
@@ -165,16 +165,29 @@ export function evaluateSectorConstraints(farm: Farm, farmTasks: Task[] = []): S
   const hasWarning = constraints.some((c) => c.severity === 'WARNING');
   const overallStatus = hasLockout ? 'LOCKED_OUT' : hasWarning ? 'WARNING' : 'SAFE';
 
-  // Find all tasks at this farm that match locked-out categories
+  // Find all tasks at this farm that conflict with locked-out conditions
   const affectedTasks = farmTasks.filter((t) => {
     if (t.status === 'COMPLETED' || t.status === 'CANCELLED') return false;
-    const cat = (t.category || '').toUpperCase();
-    return constraints.some((c) => c.severity === 'LOCKED_OUT' && c.category === cat);
+    const cat = (t.category || '').toLowerCase();
+
+    // Check if task is spraying/fertilizing and wash-off/wind is locked out
+    if ((cat.includes('spray') || cat.includes('fertiliz')) && (isRainForecast || wind > 20)) {
+      return true;
+    }
+    // Check if task is plowing/tillage and soil is muddy
+    if ((cat.includes('plow') || cat.includes('till') || cat.includes('level')) && isMuddy) {
+      return true;
+    }
+    // Check if task is drone and wind/rain is locked out
+    if ((cat.includes('drone') || cat.includes('scout') || cat.includes('survey')) && (wind > 22 || isRainForecast)) {
+      return true;
+    }
+    return false;
   });
 
   return {
     farmId: farm.id,
-    farmCode: farm.code || `SEC-0${farm.id}`,
+    farmCode: farm.code || farm.name.split(' - ')[0],
     farmName: farm.name,
     weatherStatus: farm.weatherStatus,
     windSpeedKmh: wind,
@@ -187,7 +200,7 @@ export function evaluateSectorConstraints(farm: Farm, farmTasks: Task[] = []): S
 }
 
 /**
- * Runs full matrix evaluation across all enterprise sectors and tasks
+ * Runs evaluation across all farms and tasks
  */
 export function runWeatherTaskConstraintEvaluation(
   farms: Farm[],
@@ -202,27 +215,45 @@ export function runWeatherTaskConstraintEvaluation(
     const report = evaluateSectorConstraints(farm, farmTasks);
     reports.push(report);
 
-    // Evaluate each active task at this farm
     for (const task of farmTasks) {
       if (task.status === 'COMPLETED' || task.status === 'CANCELLED') continue;
 
-      const cat = (task.category || '').toUpperCase();
-      const violatedConstraint = report.constraints.find(
-        (c) => c.severity === 'LOCKED_OUT' && c.category === cat
-      );
+      const cat = (task.category || '').toLowerCase();
+      let violatedReason = '';
 
-      if (violatedConstraint) {
+      const isSpraying = cat.includes('spray') || cat.includes('fertiliz');
+      const isPlowing = cat.includes('plow') || cat.includes('till') || cat.includes('level');
+      const isDrone = cat.includes('drone') || cat.includes('scout') || cat.includes('survey');
+
+      const washOff = report.constraints.find((c) => c.type === 'WASH_OFF');
+      const windDrift = report.constraints.find((c) => c.type === 'WIND_DRIFT');
+      const soilMud = report.constraints.find((c) => c.type === 'SOIL_COMPACTION');
+      const droneW = report.constraints.find((c) => c.type === 'DRONE_ENVELOPE');
+
+      if (isSpraying && washOff?.severity === 'LOCKED_OUT') {
+        violatedReason = washOff.reason;
+      } else if (isSpraying && windDrift?.severity === 'LOCKED_OUT') {
+        violatedReason = windDrift.reason;
+      } else if (isPlowing && soilMud?.severity === 'LOCKED_OUT') {
+        violatedReason = soilMud.reason;
+      } else if (isDrone && droneW?.severity === 'LOCKED_OUT') {
+        violatedReason = droneW.reason;
+      }
+
+      if (violatedReason) {
         if (task.status !== 'PAUSED_BY_AI') {
           tasksToPause.push({
             task,
-            reason: `[CONSTRAINT_VIOLATION] ${violatedConstraint.name}: ${violatedConstraint.reason}`,
+            reason: violatedReason,
           });
         }
       } else {
-        // If it was paused by AI for a weather constraint, but conditions are now SAFE:
         if (
           task.status === 'PAUSED_BY_AI' &&
-          task.aiReasoning?.includes('[CONSTRAINT_VIOLATION]')
+          (task.aiReasoning?.includes('Rain is coming') ||
+            task.aiReasoning?.includes('Too windy') ||
+            task.aiReasoning?.includes('Soil is too wet') ||
+            task.aiReasoning?.includes('Precipitation'))
         ) {
           tasksToResume.push(task);
         }
@@ -239,4 +270,3 @@ export function runWeatherTaskConstraintEvaluation(
     totalViolations,
   };
 }
-

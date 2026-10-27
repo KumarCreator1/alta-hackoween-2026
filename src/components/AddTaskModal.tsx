@@ -31,7 +31,7 @@ export default function AddTaskModal({
   const [assignedResourceId, setAssignedResourceId] = useState<number | null>(null);
   const [priority, setPriority] = useState(2);
   const [scheduledSlot, setScheduledSlot] = useState('09:00 - 11:30');
-  const [category, setCategory] = useState('SPRAYING');
+  const [category, setCategory] = useState('Spraying');
   const [fieldSection, setFieldSection] = useState('Section A1');
   const [submitting, setSubmitting] = useState(false);
 
@@ -93,7 +93,7 @@ export default function AddTaskModal({
             <label className="font-semibold text-stone-700 block mb-1">Task Title *</label>
             <input
               type="text"
-              placeholder="e.g. Variable-Rate Nitrogen Application"
+              placeholder="e.g. Plow Field B, Spray Weeds, Fertilize Corn"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -128,12 +128,13 @@ export default function AddTaskModal({
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-3 py-1.5 bg-stone-50 rounded border border-stone-300 focus:bg-white focus:outline-none focus:border-stone-500"
               >
-                <option value="SPRAYING">Chemical Spraying</option>
-                <option value="TILLAGE">Tillage & Preparation</option>
-                <option value="HARVEST">Harvesting</option>
-                <option value="SURVEY">Aerial Drone Survey</option>
-                <option value="IRRIGATION">Irrigation Protocol</option>
-                <option value="FIELD_OPS">General Field Operations</option>
+                <option value="Spraying">Spraying (Crop Protection)</option>
+                <option value="Plowing">Plowing & Tillage</option>
+                <option value="Fertilizing">Fertilizing & Feeding</option>
+                <option value="Watering">Watering & Irrigation</option>
+                <option value="Drone Scouting">Drone Crop Scouting</option>
+                <option value="Inspecting">Field Inspection</option>
+                <option value="Harvesting">Harvesting</option>
               </select>
             </div>
           </div>

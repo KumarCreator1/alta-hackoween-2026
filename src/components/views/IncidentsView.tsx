@@ -34,10 +34,10 @@ export default function IncidentsView({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold text-stone-900 tracking-tight">
-            Human-in-the-Loop Incident Queue
+            Farm Alerts & Approvals
           </h2>
           <p className="text-xs text-stone-500 mt-0.5">
-            Operational disturbance proposals and mutation diffs awaiting operator sign-off
+            Review and approve schedule adjustments suggested by weather alerts and equipment checks
           </p>
         </div>
 
@@ -72,10 +72,10 @@ export default function IncidentsView({
       <div className="bg-white border border-stone-300 rounded-lg p-5 shadow-2xs space-y-4">
         <div className="flex items-center justify-between border-b border-stone-200 pb-2.5">
           <span className="text-xs font-bold text-stone-900 uppercase tracking-wider font-mono">
-            Transaction Proposals Staged for Operator Signature ({filteredTickets.length})
+            Pending Decisions & Suggested Adjustments ({filteredTickets.length})
           </span>
           <span className="text-xs text-stone-500 font-mono">
-            ACID State Mutex Staged
+            Awaiting Owner Sign-Off
           </span>
         </div>
 
