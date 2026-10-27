@@ -22,3 +22,4 @@ export async function DELETE(
 ) {
   return POST(request, { params });
 }
+

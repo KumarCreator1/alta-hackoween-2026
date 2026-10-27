@@ -55,3 +55,4 @@ export async function DELETE(
     return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 });
   }
 }
+

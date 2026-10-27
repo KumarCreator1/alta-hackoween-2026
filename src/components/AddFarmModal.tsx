@@ -232,3 +232,4 @@ export default function AddFarmModal({ isOpen, onClose, onCreated }: AddFarmModa
     </div>
   );
 }
+
