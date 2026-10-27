@@ -21,8 +21,15 @@ export default function ChaosView({
   onApproveTicket,
   onRejectTicket,
 }: ChaosViewProps) {
+  const farmAlpha = farms[0];
+  const farmBeta = farms[1] || farms[0];
+  const farmAlphaId = farmAlpha?.id || 1;
+  const farmBetaId = farmBeta?.id || 2;
+  const alphaLabel = farmAlpha ? (farmAlpha.code || farmAlpha.name.split(' - ')[0]) : 'Sector Alpha';
+  const betaLabel = farmBeta ? (farmBeta.code || farmBeta.name.split(' - ')[0]) : 'Sector Beta';
+
   const [customType, setCustomType] = useState('WEATHER_WEBHOOK');
-  const [customFarmId, setCustomFarmId] = useState(1);
+  const [customFarmId, setCustomFarmId] = useState(farmAlphaId);
   const [customDetails, setCustomDetails] = useState('');
   const [triggering, setTriggering] = useState(false);
 
@@ -42,7 +49,7 @@ export default function ChaosView({
   };
 
   const handleLeafUpload = async (base64: string) => {
-    await onTriggerCrisis('CV_DISEASE_REPORT', 2, {
+    await onTriggerCrisis('CV_DISEASE_REPORT', farmBetaId, {
       disease: 'Late Blight Fungus',
       imageBase64: base64,
     });
@@ -55,7 +62,7 @@ export default function ChaosView({
         <div>
           <h2 className="text-xl font-bold text-gray-900">Chaos Injector Laboratory</h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            Deterministic crisis triggers & multimodal computer vision triage workbench
+            Deterministic crisis triggers & multimodal computer vision triage workbench across {farms.length} sectors
           </p>
         </div>
         <span className="text-xs font-mono font-bold px-3 py-1 bg-amber-100 text-amber-900 rounded-xl border border-amber-300">
@@ -73,14 +80,14 @@ export default function ChaosView({
             </div>
             <h3 className="text-sm font-bold text-gray-900">Compound Flash Storm</h3>
             <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              Triggers a sudden <strong>Heavy Rain Warning</strong> on Sector Alpha. AI will automatically halt chemical spraying & fertilization tasks to prevent pesticide wash-off runoff.
+              Triggers a sudden <strong>Heavy Rain Warning</strong> on {alphaLabel}. AI will automatically halt chemical spraying & fertilization tasks to prevent pesticide wash-off runoff.
             </p>
           </div>
           <button
-            onClick={() => onTriggerCrisis('WEATHER_WEBHOOK', 1, { condition: 'HEAVY_RAIN_WARNING' })}
+            onClick={() => onTriggerCrisis('WEATHER_WEBHOOK', farmAlphaId, { condition: 'HEAVY_RAIN_WARNING' })}
             className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2"
           >
-            <span>Simulate Storm (Alpha)</span>
+            <span>Simulate Storm ({alphaLabel})</span>
           </button>
         </div>
 
@@ -92,14 +99,14 @@ export default function ChaosView({
             </div>
             <h3 className="text-sm font-bold text-gray-900">Fungal Blight Outbreak</h3>
             <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              Dispatches a <strong>Late Blight CV lesion report</strong> on Sector Beta. AI detects high-priority infection and commands cross-farm tractor borrowing from Sector Alpha.
+              Dispatches a <strong>Late Blight CV lesion report</strong> on {betaLabel}. AI detects high-priority infection and commands cross-farm tractor borrowing from {alphaLabel}.
             </p>
           </div>
           <button
-            onClick={() => onTriggerCrisis('CV_DISEASE_REPORT', 2, { disease: 'Late Blight Fungus' })}
+            onClick={() => onTriggerCrisis('CV_DISEASE_REPORT', farmBetaId, { disease: 'Late Blight Fungus' })}
             className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2"
           >
-            <span>Simulate Blight (Beta)</span>
+            <span>Simulate Blight ({betaLabel})</span>
           </button>
         </div>
 
@@ -111,14 +118,14 @@ export default function ChaosView({
             </div>
             <h3 className="text-sm font-bold text-gray-900">Hydraulic Line Failure</h3>
             <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              Simulates critical mechanical failure on <strong>Unit 01 Tractor</strong> during active tilling. AI marks asset down and dispatches backup machinery.
+              Simulates critical mechanical failure on <strong>Machinery Implement</strong> at {alphaLabel}. AI marks asset down and dispatches backup machinery.
             </p>
           </div>
           <button
-            onClick={() => onTriggerCrisis('EQUIPMENT_FAILURE', 1, { equipmentId: 1, failureType: 'HYDRAULIC_FAILURE' })}
+            onClick={() => onTriggerCrisis('EQUIPMENT_FAILURE', farmAlphaId, { failureType: 'HYDRAULIC_FAILURE' })}
             className="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2"
           >
-            <span>Simulate Breakdown</span>
+            <span>Simulate Breakdown ({alphaLabel})</span>
           </button>
         </div>
       </div>

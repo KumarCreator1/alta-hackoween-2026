@@ -13,6 +13,7 @@ import EdgeTrackerCard from '@/components/EdgeTrackerCard';
 import AddTaskModal from '@/components/AddTaskModal';
 
 // Dedicated Full-Page Views
+import TasksView from '@/components/views/TasksView';
 import SectorsView from '@/components/views/SectorsView';
 import TacticalMapView from '@/components/views/TacticalMapView';
 import FleetView from '@/components/views/FleetView';
@@ -226,6 +227,52 @@ export default function ARMCommandCenter() {
     }
   };
 
+  // Handle Deleting Resource
+  const handleDeleteResource = async (resourceId: number) => {
+    try {
+      const res = await fetch(`/api/resources/${resourceId}/delete`, { method: 'POST' });
+      if (res.ok) {
+        await refreshState();
+      }
+    } catch (err) {
+      console.error('Delete resource error:', err);
+    }
+  };
+
+  // Handle Deleting Task
+  const handleDeleteTask = async (taskId: number) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/delete`, { method: 'POST' });
+      if (res.ok) {
+        await refreshState();
+      }
+    } catch (err) {
+      console.error('Delete task error:', err);
+    }
+  };
+
+  // Handle Updating Task Full Details
+  const handleUpdateTaskDetails = async (
+    taskId: number,
+    data: {
+      status?: 'SCHEDULED' | 'IN_PROGRESS' | 'PAUSED_BY_AI' | 'COMPLETED' | 'CANCELLED';
+      progressPercent?: number;
+    }
+  ) => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        await refreshState();
+      }
+    } catch (err) {
+      console.error('Update task details error:', err);
+    }
+  };
+
   // Handle Updating Farm Conditions
   const handleUpdateFarm = async (
     farmId: number,
@@ -282,6 +329,9 @@ export default function ARMCommandCenter() {
         godMode={godMode}
         onToggleGodMode={() => setGodMode(!godMode)}
         incidentCount={tickets.filter((t) => t.status !== 'RESOLVED').length}
+        taskCount={tasks.length}
+        farmCount={farms.length}
+        fleetCount={resources.length}
       />
 
       {/* 2. Main Content Container */}
@@ -349,12 +399,12 @@ export default function ARMCommandCenter() {
                     </span>
                   </div>
                   <div className="my-3">
-                    <div className="text-3xl font-bold tracking-tight">2 Farms</div>
+                    <div className="text-3xl font-bold tracking-tight">{farms.length} Sectors</div>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-400/20 text-emerald-300">
-                        Alpha & Beta
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-400/20 text-emerald-300 truncate max-w-[200px]">
+                        {farms.map((f) => f.code || f.name.split(' - ')[0]).join(' • ')}
                       </span>
-                      <span className="text-[11px] text-emerald-200/80">100% Online</span>
+                      <span className="text-[11px] text-emerald-200/80">Online</span>
                     </div>
                   </div>
                 </div>
@@ -372,7 +422,7 @@ export default function ARMCommandCenter() {
                   </div>
                   <div className="my-3">
                     <div className="text-3xl font-bold tracking-tight text-gray-900">
-                      {resources.length || 6} Units
+                      {resources.length} Units
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
@@ -385,18 +435,18 @@ export default function ARMCommandCenter() {
 
                 {/* Card 3: Scheduled Operations */}
                 <div
-                  onClick={() => setActiveTab('sectors')}
+                  onClick={() => setActiveTab('tasks')}
                   className="donezo-card p-5 flex flex-col justify-between group cursor-pointer hover:shadow-md transition-all"
                 >
                   <div className="flex items-start justify-between">
-                    <span className="text-xs font-semibold text-gray-500">Scheduled Tasks</span>
+                    <span className="text-xs font-semibold text-gray-500">Work Orders</span>
                     <span className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs text-gray-600 group-hover:scale-110 transition-transform">
                       ↗
                     </span>
                   </div>
                   <div className="my-3">
                     <div className="text-3xl font-bold tracking-tight text-gray-900">
-                      {tasks.length || 12}
+                      {tasks.length}
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-800">
@@ -566,6 +616,18 @@ export default function ARMCommandCenter() {
             </>
           )}
 
+          {/* TAB: WORK ORDERS & TASKS */}
+          {activeTab === 'tasks' && (
+            <TasksView
+              tasks={filteredTasks}
+              farms={farms}
+              resources={resources}
+              onOpenAddTask={() => setIsAddTaskOpen(true)}
+              onUpdateTask={handleUpdateTaskDetails}
+              onDeleteTask={handleDeleteTask}
+            />
+          )}
+
           {/* TAB: SECTORS */}
           {activeTab === 'sectors' && (
             <SectorsView
@@ -574,6 +636,7 @@ export default function ARMCommandCenter() {
               tasks={filteredTasks}
               onUpdateFarm={handleUpdateFarm}
               onTriggerCrisis={handleTriggerCrisis}
+              onRefresh={refreshState}
             />
           )}
 
@@ -594,6 +657,7 @@ export default function ARMCommandCenter() {
               farms={farms}
               onUpdateResource={handleUpdateResource}
               onAddResource={handleAddResource}
+              onDeleteResource={handleDeleteResource}
             />
           )}
 
@@ -604,6 +668,8 @@ export default function ARMCommandCenter() {
               tasks={filteredTasks}
               farms={farms}
               onUpdateResource={handleUpdateResource}
+              onAddResource={handleAddResource}
+              onDeleteResource={handleDeleteResource}
             />
           )}
 

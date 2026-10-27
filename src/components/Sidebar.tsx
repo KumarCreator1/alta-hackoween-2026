@@ -8,6 +8,9 @@ interface SidebarProps {
   godMode: boolean;
   onToggleGodMode: () => void;
   incidentCount: number;
+  taskCount?: number;
+  farmCount?: number;
+  fleetCount?: number;
 }
 
 export default function Sidebar({
@@ -16,12 +19,16 @@ export default function Sidebar({
   godMode,
   onToggleGodMode,
   incidentCount,
+  taskCount,
+  farmCount,
+  fleetCount,
 }: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '▦', count: null },
-    { id: 'sectors', label: 'Sectors & Farms', icon: '🌾', count: '2' },
+    { id: 'tasks', label: 'Work Orders', icon: '📋', count: taskCount != null ? `${taskCount}` : null },
+    { id: 'sectors', label: 'Sectors & Farms', icon: '🌾', count: farmCount != null ? `${farmCount}` : null },
     { id: 'map', label: 'Tactical Map', icon: '🗺️', count: null },
-    { id: 'fleet', label: 'Machinery Fleet', icon: '🚜', count: '6' },
+    { id: 'fleet', label: 'Machinery Fleet', icon: '🚜', count: fleetCount != null ? `${fleetCount}` : null },
     { id: 'crew', label: 'Field Agronomists', icon: '👷', count: null },
   ];
 

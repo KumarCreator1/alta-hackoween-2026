@@ -17,8 +17,12 @@ export default function CrisisCard({
   onTriggerCrisis,
   onRefresh,
 }: CrisisCardProps) {
-  const farmAlphaId = farms[0]?.id || 1;
-  const farmBetaId = farms[1]?.id || 2;
+  const farmAlpha = farms[0];
+  const farmBeta = farms[1] || farms[0];
+  const farmAlphaId = farmAlpha?.id || 1;
+  const farmBetaId = farmBeta?.id || 2;
+  const alphaLabel = farmAlpha ? (farmAlpha.code || farmAlpha.name.split(' - ')[0]) : 'Sector Alpha';
+  const betaLabel = farmBeta ? (farmBeta.code || farmBeta.name.split(' - ')[0]) : 'Sector Beta';
 
   const handleLeafUpload = async (base64: string) => {
     await onTriggerCrisis('CV_DISEASE_REPORT', farmBetaId, {
@@ -62,7 +66,7 @@ export default function CrisisCard({
           >
             <div className="text-base mb-1">🌧️</div>
             <div className="text-[11px] font-bold leading-tight">Flash Storm</div>
-            <div className="text-[9px] text-emerald-200/70 mt-0.5">Sector Alpha</div>
+            <div className="text-[9px] text-emerald-200/70 mt-0.5">{alphaLabel}</div>
           </button>
 
           <button
@@ -75,13 +79,12 @@ export default function CrisisCard({
           >
             <div className="text-base mb-1">🍂</div>
             <div className="text-[11px] font-bold leading-tight">Fungal Blight</div>
-            <div className="text-[9px] text-emerald-200/70 mt-0.5">Sector Beta</div>
+            <div className="text-[9px] text-emerald-200/70 mt-0.5">{betaLabel}</div>
           </button>
 
           <button
             onClick={() =>
               onTriggerCrisis('EQUIPMENT_FAILURE', farmAlphaId, {
-                equipmentId: 1,
                 failureType: 'HYDRAULIC_FAILURE',
               })
             }
@@ -89,7 +92,7 @@ export default function CrisisCard({
           >
             <div className="text-base mb-1">🔧</div>
             <div className="text-[11px] font-bold leading-tight">Tractor Fail</div>
-            <div className="text-[9px] text-emerald-200/70 mt-0.5">Unit 01 Hydraulic</div>
+            <div className="text-[9px] text-emerald-200/70 mt-0.5">{alphaLabel} Valve</div>
           </button>
         </div>
       </div>

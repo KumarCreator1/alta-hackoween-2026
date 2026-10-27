@@ -59,6 +59,40 @@ An **Agricultural Resource Management (ARM) Command Center** powered by **Next.j
 
 ---
 
+## 🌐 Centralized Multi-Farm Operations & Complete REST CRUD
+
+Parallax ARM centralizes operations for agricultural enterprises running multiple distributed sectors (varied acreage, microclimates, soil compositions, irrigation systems, and appointed fleets).
+
+### Full REST CRUD API Matrix
+
+| Resource | Method & Route | Purpose |
+|---|---|---|
+| **Farms / Sectors** | `GET /api/farms` | List all registered agricultural sectors |
+| | `POST /api/farms` or `/api/farms/create` | Register new farm sector (acreage, soil pH, moisture range, irrigation rig) |
+| | `GET /api/farms/[id]` | Inspect farm details, appointed machinery & active tasks |
+| | `POST /api/farms/[id]/update` | Update telematics, soil targets, or weather status |
+| | `POST /api/farms/[id]/delete` | Decommission and remove sector |
+| **Fleet & Workers** | `GET /api/resources` | List all machinery implements and agronomists (`?farmId=X` filter) |
+| | `POST /api/resources` or `/api/resources/create` | Deploy tractor, harvester, drone, or agronomist to a sector |
+| | `GET /api/resources/[id]` | Inspect resource telematics, battery/fuel, speed, CAN-bus status |
+| | `POST /api/resources/[id]/update` | Reallocate cross-farm (`status: EN_ROUTE`), service/repair, refuel |
+| | `POST /api/resources/[id]/delete` | Retire equipment from operational roster |
+| **Work Orders** | `GET /api/tasks` | List all operational missions (`?farmId=X` filter) |
+| | `POST /api/tasks` or `/api/tasks/create` | Issue scheduled work order with priority and implement assignment |
+| | `GET /api/tasks/[id]` | Retrieve mission parameters and AI reasoning |
+| | `POST /api/tasks/[id]/update` | Update mission status (`SCHEDULED`, `IN_PROGRESS`, `PAUSED_BY_AI`, `COMPLETED`) |
+| | `POST /api/tasks/[id]/delete` | Cancel and delete mission |
+| **HITL Tickets** | `GET /api/tickets` | Query active incident mutation tickets |
+| | `POST /api/tickets/[id]/approve` | 1-Click operator execution of proposed mutations |
+| | `POST /api/tickets/[id]/reject` | Operator override and dismissal of AI recommendations |
+| | `POST /api/tickets/[id]/delete` | Purge ticket from dispatch queue |
+| **Telemetry & Ingestion** | `POST /api/events/ingest` | Ingest weather webhooks, leaf vision assays, or hardware faults |
+| | `GET /api/logs` | Real-time NASA-style event log stream |
+| | `GET /api/state` | Composite ACID state snapshot |
+| | `POST /api/reset` | 1-Click demo state reseed across all locations |
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Framework**: Next.js 16 (React 19, App Router)
@@ -104,20 +138,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ```bash
 npm run build
 npm start
-```
-
 ---
-
-## 🎬 3-Minute Live Pitch Choreography
-
-1. **0:00 – 0:30 (The Baseline)**: Open the dashboard. Point out nominal schedules on *Sector Alpha* and *Sector Beta*, visualized on both the central vector map and the worker phone emulator on the right.
-2. **0:30 – 1:15 (The Compound Crisis)**: Trigger a compound crisis using the Chaos Injector: click **🌧️ Flash Storm** on Sector Alpha, followed by dragging a blight leaf image onto Sector Beta.
-3. **1:15 – 2:00 (The Autonomous Triage)**: Highlight the sub-second AI triage card. Read the executive summary: Gemini identified the oncoming storm will wash off pesticides in Sector Alpha, immediately paused the chemical tasks, hijacked Sector Alpha's idle sprayer tractor, and routed it to Sector Beta to contain the outbreak.
-4. **2:00 – 2:45 (The HITL Handoff)**: Click **[✓ Approve & Dispatch]**. Watch the SVG tractor animate from Alpha to Beta across the transit corridor, telemetry logs scroll in real-time, and the worker phone flash with updated driving orders.
-5. **2:45 – 3:00 (The Close)**: Reiterate the **80% AI cognitive automation / 20% human executive oversight** model solving complex physical cross-farm logistical constraints.
-
----
-
 ## 👥 Team Parallax
 
 - **Vicky Kumar** & Team Parallax
