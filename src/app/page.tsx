@@ -168,10 +168,7 @@ export default function ARMCommandCenter() {
 
             {/* Live Terminal Telemetry Log */}
             <div className="h-56 glass-card p-3 flex flex-col overflow-hidden">
-              <LiveTerminal
-                logs={logs}
-                onNewLogs={(newLogs) => setLogs(newLogs)}
-              />
+              <LiveTerminal logs={logs} />
             </div>
           </section>
         </main>
