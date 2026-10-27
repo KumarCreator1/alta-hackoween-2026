@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 interface LeafUploaderProps {
   onUpload: (base64: string) => Promise<void>;
@@ -41,15 +41,6 @@ export default function LeafUploader({ onUpload }: LeafUploaderProps) {
     [handleFile]
   );
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-
   const handleClick = useCallback(() => {
     const input = document.createElement('input');
     input.type = 'file';
@@ -64,47 +55,27 @@ export default function LeafUploader({ onUpload }: LeafUploaderProps) {
   return (
     <div
       onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
+      onDragLeave={() => setIsDragging(false)}
       onClick={handleClick}
-      className={`glass-card p-4 cursor-pointer transition-all duration-200 text-center
-                  border-dashed !border-2 ${
-                    isDragging
-                      ? '!border-amber-500/50 bg-amber-500/5'
-                      : '!border-white/10 hover:!border-white/20'
-                  }`}
+      className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all ${
+        isDragging
+          ? 'border-emerald-600 bg-emerald-50/50 scale-[0.99]'
+          : 'border-gray-200 hover:border-emerald-600/50 hover:bg-gray-50/50'
+      }`}
     >
-      {isUploading ? (
-        <div className="flex items-center justify-center gap-2 py-2">
-          <svg className="animate-spin h-4 w-4 text-cyan-400" viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-              fill="none"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
-          <span className="text-[11px] text-cyan-400 font-mono">Analyzing with Gemini AI...</span>
+      <div className="flex flex-col items-center gap-1.5">
+        <span className="text-2xl">🍂</span>
+        <div className="text-xs font-bold text-gray-800">
+          {isUploading ? 'Analyzing Disease via Gemini...' : 'Drop Leaf Image for AI Analysis'}
         </div>
-      ) : (
-        <div className="py-1">
-          <span className="text-xl block mb-1">🍂</span>
-          <span className="text-[11px] text-gray-400">
-            Drop Leaf Image for AI Analysis
-          </span>
-          <span className="block text-[9px] text-gray-600 mt-0.5">
-            Click or drag &amp; drop
-          </span>
-        </div>
-      )}
+        <p className="text-[11px] text-gray-500 max-w-xs">
+          Drag & drop leaf photo or click to browse. Gemini 3.8 Flash detects lesions and drafts spray reallocations.
+        </p>
+      </div>
     </div>
   );
 }
