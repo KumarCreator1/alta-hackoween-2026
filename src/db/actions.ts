@@ -14,6 +14,9 @@ import {
   type IncidentTicket,
   type EventLog,
   type ProposedMutation,
+  type NewFarm,
+  type NewResource,
+  type NewTask,
 } from './schema';
 import { seedDatabase } from './seed';
 
@@ -251,6 +254,196 @@ export async function updateFarmConditions(
     'INFO',
     '📡',
     `Sector #${farmId} telemetry adjusted: Moisture=${updated?.soilMoisture}%, Weather="${updated?.weatherStatus}"`
+  );
+
+  return getFullState();
+}
+
+// ── Farm Full CRUD ─────────────────────────────────────────────────────────────
+
+export async function createFarm(data: {
+  name: string;
+  code?: string;
+  region?: string;
+  acreage?: number;
+  cropType?: string;
+  soilMoisture?: number;
+  targetMoistureMin?: number;
+  targetMoistureMax?: number;
+  soilType?: string;
+  soilPh?: string;
+  weatherStatus?: string;
+  coordinates?: { x: number; y: number };
+  tempCelsius?: number;
+  windSpeedKmh?: number;
+  irrigationType?: string;
+  healthScore?: number;
+}): Promise<FullState> {
+  const existingFarms = await db.select().from(farms);
+  const nextIndex = existingFarms.length + 1;
+  const defaultCode = `SEC-0${nextIndex}`;
+  
+  // Distribute on 800x280 canvas if coordinates not provided
+  const defaultCoord = {
+    x: 100 + ((nextIndex * 180) % 650),
+    y: 90 + ((nextIndex * 55) % 150),
+  };
+
+  const [newFarm] = await db
+    .insert(farms)
+    .values({
+      name: data.name,
+      code: data.code || defaultCode,
+      region: data.region || 'Central Agricultural Zone',
+      acreage: data.acreage ?? 450,
+      cropType: data.cropType || 'Rotational Grain & Legume',
+      soilMoisture: data.soilMoisture ?? 55,
+      targetMoistureMin: data.targetMoistureMin ?? 45,
+      targetMoistureMax: data.targetMoistureMax ?? 70,
+      soilType: data.soilType || 'Loam',
+      soilPh: data.soilPh || '6.8',
+      weatherStatus: data.weatherStatus || 'Clear Skies, 26°C',
+      coordinates: data.coordinates || defaultCoord,
+      tempCelsius: data.tempCelsius ?? 26,
+      windSpeedKmh: data.windSpeedKmh ?? 12,
+      irrigationType: data.irrigationType || 'DRIP_MICRO',
+      healthScore: data.healthScore ?? 96,
+    })
+    .returning();
+
+  await addEventLog(
+    'INFO',
+    '🌾',
+    `New Agricultural Sector established: "${newFarm.name}" (${newFarm.code}) in ${newFarm.region} [${newFarm.acreage} Acres]`
+  );
+
+  return getFullState();
+}
+
+export async function updateFarm(
+  farmId: number,
+  data: Partial<NewFarm>
+): Promise<FullState> {
+  const [updated] = await db
+    .update(farms)
+    .set(data)
+    .where(eq(farms.id, farmId))
+    .returning();
+
+  await addEventLog(
+    'INFO',
+    '✏️',
+    `Sector #${farmId} "${updated?.name}" configuration updated`
+  );
+
+  return getFullState();
+}
+
+export async function deleteFarm(farmId: number): Promise<FullState> {
+  const [deleted] = await db
+    .delete(farms)
+    .where(eq(farms.id, farmId))
+    .returning();
+
+  await addEventLog(
+    'WARN',
+    '🗑️',
+    `Sector #${farmId} "${deleted?.name || 'Unknown'}" decommissioned and removed from operations`
+  );
+
+  return getFullState();
+}
+
+// ── Resource Full CRUD Extensions ──────────────────────────────────────────────
+
+export async function deleteResource(resourceId: number): Promise<FullState> {
+  const [deleted] = await db
+    .delete(resources)
+    .where(eq(resources.id, resourceId))
+    .returning();
+
+  await addEventLog(
+    'WARN',
+    '🗑️',
+    `Asset #${resourceId} "${deleted?.name || 'Resource'}" retired from fleet`
+  );
+
+  return getFullState();
+}
+
+// ── Task Full CRUD Extensions ──────────────────────────────────────────────────
+
+export async function updateTask(
+  taskId: number,
+  data: {
+    title?: string;
+    farmId?: number;
+    assignedResourceId?: number | null;
+    status?: 'SCHEDULED' | 'IN_PROGRESS' | 'PAUSED_BY_AI' | 'COMPLETED' | 'CANCELLED';
+    priority?: number;
+    scheduledSlot?: string;
+    category?: string;
+    progressPercent?: number;
+    fieldSection?: string;
+    targetHectares?: number;
+  }
+): Promise<FullState> {
+  const [updated] = await db
+    .update(tasks)
+    .set(data)
+    .where(eq(tasks.id, taskId))
+    .returning();
+
+  await addEventLog(
+    'DISPATCH',
+    '📋',
+    `Work order #${taskId} "${updated?.title}" modified [Status: ${updated?.status}, Progress: ${updated?.progressPercent}%]`
+  );
+
+  return getFullState();
+}
+
+export async function deleteTask(taskId: number): Promise<FullState> {
+  const [deleted] = await db
+    .delete(tasks)
+    .where(eq(tasks.id, taskId))
+    .returning();
+
+  await addEventLog(
+    'INFO',
+    '🗑️',
+    `Work order #${taskId} "${deleted?.title || 'Task'}" cancelled and deleted`
+  );
+
+  return getFullState();
+}
+
+// ── Ticket Full CRUD Extensions ────────────────────────────────────────────────
+
+export async function rejectTicket(ticketId: number): Promise<FullState> {
+  await db
+    .update(incidentTickets)
+    .set({ status: 'RESOLVED' })
+    .where(eq(incidentTickets.id, ticketId));
+
+  await addEventLog(
+    'WARN',
+    '❌',
+    `Incident Ticket #${ticketId} rejected and dismissed by farm operator.`
+  );
+
+  return getFullState();
+}
+
+export async function deleteTicket(ticketId: number): Promise<FullState> {
+  await db
+    .delete(incidentTickets)
+    .where(eq(incidentTickets.id, ticketId));
+
+  await addEventLog(
+    'INFO',
+    '🗑️',
+    `Incident Ticket #${ticketId} purged from dispatch queue.`
   );
 
   return getFullState();
