@@ -17,3 +17,4 @@ export async function POST(
     return NextResponse.json({ error: 'Failed to update resource' }, { status: 500 });
   }
 }
+
