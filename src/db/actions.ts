@@ -63,7 +63,7 @@ export async function getEventLogs(limit: number = 50): Promise<EventLog[]> {
 // ── Composite Query ────────────────────────────────────────────────────────────
 
 export async function getFullState(): Promise<FullState> {
-  const [allFarms, allResources, allTasks, activeTickets, logs] = await Promise.all([
+  const [farmsRes, resourcesRes, tasksRes, ticketsRes, logsRes] = await Promise.allSettled([
     getAllFarms(),
     getAllResources(),
     getAllTasks(),
@@ -72,11 +72,11 @@ export async function getFullState(): Promise<FullState> {
   ]);
 
   return {
-    farms: allFarms,
-    resources: allResources,
-    tasks: allTasks,
-    tickets: activeTickets,
-    logs,
+    farms: farmsRes.status === 'fulfilled' ? farmsRes.value : [],
+    resources: resourcesRes.status === 'fulfilled' ? resourcesRes.value : [],
+    tasks: tasksRes.status === 'fulfilled' ? tasksRes.value : [],
+    tickets: ticketsRes.status === 'fulfilled' ? ticketsRes.value : [],
+    logs: logsRes.status === 'fulfilled' ? logsRes.value : [],
   };
 }
 

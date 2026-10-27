@@ -40,7 +40,10 @@ export default function ARMCommandCenter() {
   const refreshState = useCallback(async () => {
     try {
       const res = await fetch('/api/state');
-      if (!res.ok) throw new Error('Failed to fetch state');
+      if (!res.ok) {
+        console.warn('Temporary state fetch blip (HTTP ' + res.status + ') - will retry on next poll');
+        return;
+      }
       const data = await res.json();
       setFarms(data.farms || []);
       setResources(data.resources || []);

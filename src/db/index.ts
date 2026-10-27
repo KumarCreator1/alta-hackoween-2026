@@ -14,6 +14,13 @@ const isRemote =
 const pool = new Pool({
   connectionString,
   ssl: isRemote ? { rejectUnauthorized: false } : undefined,
+  max: 10,
+  idleTimeoutMillis: 20000,
+  connectionTimeoutMillis: 10000,
+});
+
+pool.on('error', (err) => {
+  console.warn('Supabase PostgreSQL pool idle client warning:', err.message);
 });
 
 export const db = drizzle(pool, { schema });
