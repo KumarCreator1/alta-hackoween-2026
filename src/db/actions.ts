@@ -118,6 +118,144 @@ export async function addEventLog(
   return log;
 }
 
+export async function createTask(data: {
+  title: string;
+  farmId: number;
+  assignedResourceId?: number | null;
+  priority?: number;
+  scheduledSlot: string;
+  category?: string;
+  aiReasoning?: string;
+}): Promise<FullState> {
+  const [newTask] = await db
+    .insert(tasks)
+    .values({
+      title: data.title,
+      farmId: data.farmId,
+      assignedResourceId: data.assignedResourceId ?? null,
+      priority: data.priority ?? 3,
+      scheduledSlot: data.scheduledSlot,
+      category: data.category ?? 'FIELD_OPS',
+      aiReasoning: data.aiReasoning ?? null,
+      status: 'SCHEDULED',
+      progressPercent: 0,
+    })
+    .returning();
+
+  await addEventLog(
+    'INFO',
+    '📋',
+    `Task created: "${newTask.title}" for Sector #${data.farmId} [Slot: ${data.scheduledSlot}]`
+  );
+
+  return getFullState();
+}
+
+export async function updateTaskStatus(
+  taskId: number,
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'PAUSED_BY_AI' | 'COMPLETED' | 'CANCELLED',
+  progressPercent?: number
+): Promise<FullState> {
+  const updateData: Record<string, unknown> = { status };
+  if (progressPercent !== undefined) {
+    updateData.progressPercent = progressPercent;
+  }
+
+  const [updated] = await db
+    .update(tasks)
+    .set(updateData)
+    .where(eq(tasks.id, taskId))
+    .returning();
+
+  await addEventLog(
+    'DISPATCH',
+    status === 'COMPLETED' ? '✅' : status === 'IN_PROGRESS' ? '🚜' : '⏸️',
+    `Task #${taskId} "${updated?.title || ''}" updated to ${status} (${progressPercent ?? updated?.progressPercent ?? 0}%)`
+  );
+
+  return getFullState();
+}
+
+export async function createResource(data: {
+  name: string;
+  type: string;
+  currentFarmId: number;
+  fuelOrBattery?: number;
+  model?: string;
+}): Promise<FullState> {
+  const [newRes] = await db
+    .insert(resources)
+    .values({
+      name: data.name,
+      type: data.type,
+      currentFarmId: data.currentFarmId,
+      fuelOrBattery: data.fuelOrBattery ?? 100,
+      model: data.model ?? 'Standard Implement',
+      status: 'IDLE',
+      speedKmh: 0,
+      implementStatus: 'Standby',
+      engineHours: 0,
+    })
+    .returning();
+
+  await addEventLog(
+    'INFO',
+    '🚜',
+    `Resource added: "${newRes.name}" (${newRes.type}) assigned to Sector #${data.currentFarmId}`
+  );
+
+  return getFullState();
+}
+
+export async function updateResource(
+  resourceId: number,
+  data: {
+    status?: 'IDLE' | 'BUSY' | 'MAINTENANCE' | 'EN_ROUTE';
+    currentFarmId?: number;
+    fuelOrBattery?: number;
+    speedKmh?: number;
+    implementStatus?: string;
+  }
+): Promise<FullState> {
+  const [updated] = await db
+    .update(resources)
+    .set(data)
+    .where(eq(resources.id, resourceId))
+    .returning();
+
+  await addEventLog(
+    'DISPATCH',
+    data.status === 'EN_ROUTE' ? '🔀' : '🔧',
+    `Asset #${resourceId} "${updated?.name}" updated: Status=${updated?.status}, Farm=#${updated?.currentFarmId}`
+  );
+
+  return getFullState();
+}
+
+export async function updateFarmConditions(
+  farmId: number,
+  data: {
+    soilMoisture?: number;
+    weatherStatus?: string;
+    tempCelsius?: number;
+    windSpeedKmh?: number;
+  }
+): Promise<FullState> {
+  const [updated] = await db
+    .update(farms)
+    .set(data)
+    .where(eq(farms.id, farmId))
+    .returning();
+
+  await addEventLog(
+    'INFO',
+    '📡',
+    `Sector #${farmId} telemetry adjusted: Moisture=${updated?.soilMoisture}%, Weather="${updated?.weatherStatus}"`
+  );
+
+  return getFullState();
+}
+
 export async function resetDemoState(): Promise<FullState> {
   await seedDatabase();
   return getFullState();

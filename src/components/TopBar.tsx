@@ -7,6 +7,9 @@ interface TopBarProps {
   onToggleGodMode: () => void;
   onReset: () => void;
   onTriggerCrisis?: () => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  onOpenAddTask?: () => void;
 }
 
 export default function TopBar({
@@ -14,6 +17,9 @@ export default function TopBar({
   onToggleGodMode,
   onReset,
   onTriggerCrisis,
+  searchQuery,
+  onSearchChange,
+  onOpenAddTask,
 }: TopBarProps) {
   const [resetting, setResetting] = useState(false);
 
@@ -25,14 +31,16 @@ export default function TopBar({
 
   return (
     <header className="h-16 px-8 flex items-center justify-between border-b border-gray-200/80 bg-white/70 backdrop-blur-md sticky top-0 z-30">
-      {/* Left: Search Bar */}
+      {/* Left: Working Global Search Bar */}
       <div className="relative w-80">
         <span className="absolute inset-y-0 left-3 flex items-center text-gray-400 text-sm">
           🔍
         </span>
         <input
           type="text"
-          placeholder="Search farm, asset, ticket..."
+          placeholder="Search farm, asset, task..."
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
           className="w-full pl-9 pr-12 py-2 bg-gray-100/80 hover:bg-gray-100 focus:bg-white text-xs font-medium text-gray-800 placeholder-gray-400 rounded-xl border border-transparent focus:border-emerald-600 focus:outline-none transition-all"
         />
         <span className="absolute inset-y-0 right-2.5 flex items-center">
@@ -44,6 +52,17 @@ export default function TopBar({
 
       {/* Right Controls */}
       <div className="flex items-center gap-3">
+        {/* Quick Add Task */}
+        {onOpenAddTask && (
+          <button
+            onClick={onOpenAddTask}
+            className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-[#134E35] hover:bg-[#0E3D29] text-white shadow-xs transition-all flex items-center gap-1.5"
+          >
+            <span>+</span>
+            <span>New Task</span>
+          </button>
+        )}
+
         {/* Quick Trigger Button */}
         <button
           onClick={onTriggerCrisis}
@@ -80,7 +99,7 @@ export default function TopBar({
           onClick={onToggleGodMode}
           className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl border transition-all ${
             godMode
-              ? 'bg-[#134E35] border-[#134E35] text-white shadow-sm'
+              ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
               : 'border-gray-200 text-gray-600 hover:bg-gray-50'
           }`}
         >
@@ -89,13 +108,7 @@ export default function TopBar({
 
         <div className="h-6 w-px bg-gray-200 mx-1" />
 
-        {/* Notifications */}
-        <button className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 relative">
-          <span>🔔</span>
-          <span className="w-2 h-2 rounded-full bg-red-500 absolute top-2 right-2 ring-2 ring-white" />
-        </button>
-
-        {/* User Profile (matches inspiration Totok Michael avatar badge) */}
+        {/* User Profile */}
         <div className="flex items-center gap-2.5 pl-1">
           <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-400 text-white font-bold text-xs flex items-center justify-center shadow-xs">
             VK

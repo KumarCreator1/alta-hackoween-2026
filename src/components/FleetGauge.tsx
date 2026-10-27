@@ -81,3 +81,4 @@ export default function FleetGauge({ resources, farms }: FleetGaugeProps) {
     </div>
   );
 }
+

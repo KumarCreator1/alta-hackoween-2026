@@ -12,16 +12,24 @@ export const farms = pgTable('farms', {
   soilMoisture: integer('soil_moisture').notNull(),
   weatherStatus: text('weather_status').notNull(),
   coordinates: jsonb('coordinates').$type<{ x: number; y: number }>().notNull(),
+  acreage: integer('acreage').default(500),
+  cropType: text('crop_type').default('Wheat & Soybeans'),
+  tempCelsius: integer('temp_celsius').default(28),
+  windSpeedKmh: integer('wind_speed_kmh').default(14),
 });
 
-// ── Resources (tractors, drones, workers) ──────────────────────────────────────
+// ── Resources (tractors, drones, sprayers, workers) ───────────────────────────
 export const resources = pgTable('resources', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
-  type: text('type').notNull(),
+  type: text('type').notNull(), // 'TRACTOR' | 'HARVESTER' | 'DRONE' | 'WORKER'
   status: resourceStatusEnum('status').default('IDLE').notNull(),
   currentFarmId: integer('current_farm_id').references(() => farms.id).notNull(),
   fuelOrBattery: integer('fuel_or_battery').default(100).notNull(),
+  model: text('model').default('Standard Implement'),
+  speedKmh: integer('speed_kmh').default(0),
+  implementStatus: text('implement_status').default('Standby'),
+  engineHours: integer('engine_hours').default(450),
 });
 
 // ── Tasks ──────────────────────────────────────────────────────────────────────
@@ -34,6 +42,8 @@ export const tasks = pgTable('tasks', {
   priority: integer('priority').default(3).notNull(),
   scheduledSlot: text('scheduled_slot').notNull(),
   aiReasoning: text('ai_reasoning'),
+  category: text('category').default('FIELD_OPS'),
+  progressPercent: integer('progress_percent').default(0),
 });
 
 // ── Incident Tickets ───────────────────────────────────────────────────────────
