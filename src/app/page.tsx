@@ -159,13 +159,14 @@ export default function ARMCommandCenter() {
   // Handle Updating Task Status
   const handleUpdateTaskStatus = async (
     taskId: number,
-    status: 'IN_PROGRESS' | 'COMPLETED' | 'SCHEDULED' | 'PAUSED_BY_AI' | 'CANCELLED'
+    status: 'IN_PROGRESS' | 'COMPLETED' | 'SCHEDULED' | 'PAUSED_BY_AI' | 'CANCELLED',
+    metadata?: Record<string, unknown>
   ) => {
     try {
       const res = await fetch(`/api/tasks/${taskId}/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, ...(metadata || {}) }),
       });
       if (res.ok) {
         const updated = await res.json();
@@ -254,10 +255,7 @@ export default function ARMCommandCenter() {
   // Handle Updating Task Full Details
   const handleUpdateTaskDetails = async (
     taskId: number,
-    data: {
-      status?: 'SCHEDULED' | 'IN_PROGRESS' | 'PAUSED_BY_AI' | 'COMPLETED' | 'CANCELLED';
-      progressPercent?: number;
-    }
+    data: Record<string, unknown>
   ) => {
     try {
       const res = await fetch(`/api/tasks/${taskId}/update`, {
@@ -610,6 +608,7 @@ export default function ARMCommandCenter() {
                     resources={resources}
                     tasks={tasks}
                     logs={logs}
+                    onUpdateTaskStatus={handleUpdateTaskStatus}
                   />
                 </div>
               </div>

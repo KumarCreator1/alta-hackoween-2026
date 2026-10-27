@@ -9,12 +9,18 @@ interface EdgeTrackerCardProps {
   resources: Resource[];
   tasks: Task[];
   logs: EventLog[];
+  onUpdateTaskStatus?: (
+    taskId: number,
+    status: 'IN_PROGRESS' | 'COMPLETED',
+    metadata?: Record<string, unknown>
+  ) => Promise<void>;
 }
 
 export default function EdgeTrackerCard({
   resources,
   tasks,
   logs,
+  onUpdateTaskStatus,
 }: EdgeTrackerCardProps) {
   const [activeView, setActiveView] = useState<'terminal' | 'phone'>('terminal');
   const [seconds, setSeconds] = useState(14852); // ~4 hours shift time
@@ -59,7 +65,7 @@ export default function EdgeTrackerCard({
                 : 'text-gray-300 hover:text-white'
             }`}
           >
-            Terminal
+            Telemetry
           </button>
           <button
             onClick={() => setActiveView('phone')}
@@ -69,17 +75,17 @@ export default function EdgeTrackerCard({
                 : 'text-gray-300 hover:text-white'
             }`}
           >
-            Worker
+            Worker Phone
           </button>
         </div>
       </div>
 
-      {/* En Route Emergency Alert Banner if any */}
+      {/* Cross-Farm Reroute Notification */}
       {enRoute && (
-        <div className="my-2 bg-amber-500/20 border border-amber-500/30 rounded-xl px-2.5 py-1.5 flex items-center gap-2 z-10 slide-up">
-          <span className="text-sm">⚡</span>
-          <div className="text-[11px] font-semibold text-amber-300">
-            Rerouting: {enRoute.name} → Farm #{enRoute.currentFarmId}
+        <div className="bg-amber-500/20 border border-amber-500/40 rounded-xl px-3 py-1.5 my-2 flex items-center gap-2 z-10">
+          <span className="text-xs font-mono font-bold text-amber-300">REROUTE:</span>
+          <div className="text-[11px] font-semibold text-amber-200 truncate">
+            {enRoute.name} &rarr; Farm #{enRoute.currentFarmId}
           </div>
         </div>
       )}
@@ -92,7 +98,11 @@ export default function EdgeTrackerCard({
           </div>
         ) : (
           <div className="h-full bg-black/40 rounded-xl border border-white/10 p-2 overflow-y-auto">
-            <WorkerPhone resources={resources} tasks={tasks} />
+            <WorkerPhone
+              resources={resources}
+              tasks={tasks}
+              onUpdateTaskStatus={onUpdateTaskStatus}
+            />
           </div>
         )}
       </div>
@@ -108,4 +118,3 @@ export default function EdgeTrackerCard({
     </div>
   );
 }
-

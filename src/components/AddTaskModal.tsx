@@ -15,6 +15,7 @@ interface AddTaskModalProps {
     priority: number;
     scheduledSlot: string;
     category: string;
+    fieldSection?: string;
   }) => Promise<void>;
 }
 
@@ -26,27 +27,39 @@ export default function AddTaskModal({
   onAddTask,
 }: AddTaskModalProps) {
   const [title, setTitle] = useState('');
-  const [farmId, setFarmId] = useState(farms[0]?.id || 1);
+  const [farmId, setFarmId] = useState<number>(farms[0]?.id || 1);
   const [assignedResourceId, setAssignedResourceId] = useState<number | null>(null);
   const [priority, setPriority] = useState(2);
-  const [scheduledSlot, setScheduledSlot] = useState('14:00 - 16:00');
+  const [scheduledSlot, setScheduledSlot] = useState('09:00 - 11:30');
   const [category, setCategory] = useState('SPRAYING');
+  const [fieldSection, setFieldSection] = useState('Section A1');
   const [submitting, setSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
+  const employeesAtFarm = resources.filter(
+    (r) => r.type === 'WORKER' && r.currentFarmId === farmId
+  );
+  const otherEmployees = resources.filter(
+    (r) => r.type === 'WORKER' && r.currentFarmId !== farmId
+  );
+  const machineryAtFarm = resources.filter(
+    (r) => r.type !== 'WORKER' && r.currentFarmId === farmId
+  );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title) return;
+    if (!title.trim()) return;
     setSubmitting(true);
     try {
       await onAddTask({
-        title,
+        title: title.trim(),
         farmId,
         assignedResourceId,
         priority,
-        scheduledSlot,
+        scheduledSlot: scheduledSlot.trim(),
         category,
+        fieldSection: fieldSection.trim(),
       });
       onClose();
       setTitle('');
@@ -57,124 +70,171 @@ export default function AddTaskModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 slide-up space-y-4">
-        <div className="flex items-center justify-between border-b pb-3">
+      <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl border border-stone-300 space-y-4">
+        <div className="flex items-center justify-between border-b border-stone-200 pb-3">
           <div>
-            <h3 className="text-base font-bold text-gray-900">Dispatch New Field Task</h3>
-            <p className="text-xs text-gray-500">Assign automated or human mission to sector schedule</p>
+            <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wide">
+              Create New Work Order
+            </h3>
+            <p className="text-xs text-stone-500">
+              Assign task mission, schedule window, and responsible employee
+            </p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:text-gray-800 flex items-center justify-center"
+            className="text-stone-400 hover:text-stone-700 text-sm font-bold"
           >
-            ✕
+            Cancel
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div>
-            <label className="text-xs font-bold text-gray-700 block mb-1">Task Title</label>
+            <label className="font-semibold text-stone-700 block mb-1">Task Title *</label>
             <input
               type="text"
-              placeholder="e.g. Emergency Foliar Spraying - West Quadrant"
+              placeholder="e.g. Variable-Rate Nitrogen Application"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full px-3.5 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-emerald-600 focus:bg-white"
+              className="w-full px-3 py-1.5 bg-stone-50 rounded border border-stone-300 focus:bg-white focus:outline-none focus:border-stone-500"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-gray-700 block mb-1">Target Sector</label>
+              <label className="font-semibold text-stone-700 block mb-1">Target Sector</label>
               <select
                 value={farmId}
-                onChange={(e) => setFarmId(parseInt(e.target.value, 10))}
-                className="w-full px-3.5 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-emerald-600 focus:bg-white"
+                onChange={(e) => {
+                  const newId = parseInt(e.target.value, 10);
+                  setFarmId(newId);
+                  setAssignedResourceId(null);
+                }}
+                className="w-full px-3 py-1.5 bg-stone-50 rounded border border-stone-300 focus:bg-white focus:outline-none focus:border-stone-500"
               >
                 {farms.map((f) => (
                   <option key={f.id} value={f.id}>
-                    {f.name}
+                    {f.code} - {f.name}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-700 block mb-1">Category</label>
+              <label className="font-semibold text-stone-700 block mb-1">Category</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-emerald-600 focus:bg-white"
+                className="w-full px-3 py-1.5 bg-stone-50 rounded border border-stone-300 focus:bg-white focus:outline-none focus:border-stone-500"
               >
                 <option value="SPRAYING">Chemical Spraying</option>
                 <option value="TILLAGE">Tillage & Preparation</option>
                 <option value="HARVEST">Harvesting</option>
-                <option value="SURVEY">Drone Health Survey</option>
+                <option value="SURVEY">Aerial Drone Survey</option>
                 <option value="IRRIGATION">Irrigation Protocol</option>
-                <option value="MAINTENANCE">Equipment Servicing</option>
+                <option value="FIELD_OPS">General Field Operations</option>
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-gray-700 block mb-1">Assign Machinery / Worker</label>
+              <label className="font-semibold text-stone-700 block mb-1">
+                Responsible Employee / Implement
+              </label>
               <select
                 value={assignedResourceId || ''}
-                onChange={(e) => setAssignedResourceId(e.target.value ? parseInt(e.target.value, 10) : null)}
-                className="w-full px-3.5 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-emerald-600 focus:bg-white"
+                onChange={(e) =>
+                  setAssignedResourceId(e.target.value ? parseInt(e.target.value, 10) : null)
+                }
+                className="w-full px-3 py-1.5 bg-stone-50 rounded border border-stone-300 focus:bg-white focus:outline-none focus:border-stone-500"
               >
-                <option value="">-- Auto-Assign Nearest IDLE --</option>
-                {resources.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name} ({r.type} - Farm #{r.currentFarmId})
-                  </option>
-                ))}
+                <option value="">-- Unassigned (Standby) --</option>
+                {employeesAtFarm.length > 0 && (
+                  <optgroup label={`Employees Stationed at this Farm (${employeesAtFarm.length})`}>
+                    {employeesAtFarm.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name} ({e.model || 'Operator'})
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {otherEmployees.length > 0 && (
+                  <optgroup label="Employees at Other Sectors">
+                    {otherEmployees.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name} (Stationed at Farm #{e.currentFarmId})
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {machineryAtFarm.length > 0 && (
+                  <optgroup label={`Machinery at this Sector (${machineryAtFarm.length})`}>
+                    {machineryAtFarm.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} ({m.type})
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-700 block mb-1">Priority</label>
+              <label className="font-semibold text-stone-700 block mb-1">Priority Order</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(parseInt(e.target.value, 10))}
-                className="w-full px-3.5 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-emerald-600 focus:bg-white"
+                className="w-full px-3 py-1.5 bg-stone-50 rounded border border-stone-300 focus:bg-white focus:outline-none focus:border-stone-500 font-medium"
               >
-                <option value={1}>P1 - Critical (Immediate Dispatch)</option>
-                <option value={2}>P2 - High Urgency</option>
-                <option value={3}>P3 - Standard Schedule</option>
+                <option value={1}>P1 - Urgent (Immediate Execution)</option>
+                <option value={2}>P2 - High Priority</option>
+                <option value={3}>P3 - Normal</option>
                 <option value={4}>P4 - Low Urgency</option>
               </select>
             </div>
           </div>
 
-          <div>
-            <label className="text-xs font-bold text-gray-700 block mb-1">Execution Slot Window</label>
-            <input
-              type="text"
-              placeholder="e.g. 14:00 - 16:30"
-              value={scheduledSlot}
-              onChange={(e) => setScheduledSlot(e.target.value)}
-              required
-              className="w-full px-3.5 py-2.5 bg-gray-50 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-emerald-600 focus:bg-white"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-semibold text-stone-700 block mb-1">Schedule At (Slot)</label>
+              <input
+                type="text"
+                placeholder="e.g. 09:00 - 11:30"
+                value={scheduledSlot}
+                onChange={(e) => setScheduledSlot(e.target.value)}
+                required
+                className="w-full px-3 py-1.5 bg-stone-50 rounded border border-stone-300 focus:bg-white focus:outline-none focus:border-stone-500"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold text-stone-700 block mb-1">Field Section</label>
+              <input
+                type="text"
+                placeholder="e.g. Section A3"
+                value={fieldSection}
+                onChange={(e) => setFieldSection(e.target.value)}
+                className="w-full px-3 py-1.5 bg-stone-50 rounded border border-stone-300 focus:bg-white focus:outline-none focus:border-stone-500"
+              />
+            </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t">
+          <div className="flex justify-end gap-2 pt-3 border-t border-stone-200">
             <button
               type="button"
               onClick={onClose}
-              className="btn-outline px-4 py-2 text-xs"
+              className="px-3 py-1.5 border border-stone-300 rounded font-medium text-stone-700 hover:bg-stone-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="btn-primary px-5 py-2 text-xs font-bold shadow-sm"
+              className="px-4 py-1.5 bg-stone-900 text-white rounded font-semibold hover:bg-stone-800 disabled:opacity-50"
             >
-              {submitting ? 'Dispatching...' : 'Dispatch Task to Database'}
+              {submitting ? 'Dispatching...' : 'Dispatch Work Order'}
             </button>
           </div>
         </form>
@@ -182,4 +242,3 @@ export default function AddTaskModal({
     </div>
   );
 }
-

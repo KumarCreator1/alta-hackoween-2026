@@ -386,6 +386,10 @@ export async function updateTask(
     progressPercent?: number;
     fieldSection?: string;
     targetHectares?: number;
+    workerCompletedAt?: string | null;
+    verifiedByOwner?: boolean;
+    verificationNotes?: string | null;
+    aiReasoning?: string | null;
   }
 ): Promise<FullState> {
   const [updated] = await db

@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, jsonb, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, integer, jsonb, pgEnum, boolean } from 'drizzle-orm/pg-core';
 
 // ── Enums ──────────────────────────────────────────────────────────────────────
 export const resourceStatusEnum = pgEnum('resource_status', ['IDLE', 'BUSY', 'MAINTENANCE', 'EN_ROUTE']);
@@ -56,6 +56,9 @@ export const tasks = pgTable('tasks', {
   progressPercent: integer('progress_percent').default(0).notNull(),
   fieldSection: text('field_section').default('Section A').notNull(),
   targetHectares: integer('target_hectares').default(25).notNull(),
+  workerCompletedAt: text('worker_completed_at'),
+  verifiedByOwner: boolean('verified_by_owner').default(false).notNull(),
+  verificationNotes: text('verification_notes'),
 });
 
 // ── Incident Tickets & HITL Decision Queue (CRM Layer) ─────────────────────────
