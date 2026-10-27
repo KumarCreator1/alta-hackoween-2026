@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateFarmConditions } from '@/db/actions';
+import { updateFarm } from '@/db/actions';
 
 export async function POST(
   request: NextRequest,
@@ -10,11 +10,10 @@ export async function POST(
     const farmId = parseInt(id, 10);
     const body = await request.json();
 
-    const state = await updateFarmConditions(farmId, body);
+    const state = await updateFarm(farmId, body);
     return NextResponse.json(state);
   } catch (error) {
-    console.error('Farm conditions update failed:', error);
+    console.error('Farm update failed:', error);
     return NextResponse.json({ error: 'Failed to update farm' }, { status: 500 });
   }
 }
-

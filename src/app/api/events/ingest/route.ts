@@ -23,29 +23,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 3. Get current state for the AI orchestrator
+    const currentState = await getFullState();
+
+    // Ensure target farmId exists, otherwise fallback to first available farm
+    const targetFarm = currentState.farms.find((f) => f.id === event.farmId) || currentState.farms[0];
+    if (targetFarm) {
+      event.farmId = targetFarm.id;
+    }
+
     // 1. Log incoming event
     await addEventLog(
       'INFO',
       '⚡',
-      `Incoming ${event.type} event on Farm #${event.farmId}: ${JSON.stringify(event.payload)}`
+      `Incoming ${event.type} event on Farm #${event.farmId} (${targetFarm?.name || 'Sector'}): ${JSON.stringify(event.payload)}`
     );
 
     // 2. Update farm weather status if it's a weather event
-    if (event.type === 'WEATHER_WEBHOOK' && event.payload.condition) {
+    if (event.type === 'WEATHER_WEBHOOK' && event.payload.condition && targetFarm) {
       await db
         .update(farms)
         .set({ weatherStatus: event.payload.condition })
-        .where(eq(farms.id, event.farmId));
+        .where(eq(farms.id, targetFarm.id));
 
       await addEventLog(
         'WARN',
         '⛈️',
-        `Farm #${event.farmId} weather status updated to: ${event.payload.condition}`
+        `Farm #${targetFarm.id} (${targetFarm.name}) weather status updated to: ${event.payload.condition}`
       );
     }
-
-    // 3. Get current state for the AI orchestrator
-    const currentState = await getFullState();
 
     // 4. Call orchestration engine
     await addEventLog(
