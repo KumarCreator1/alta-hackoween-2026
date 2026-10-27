@@ -1,145 +1,243 @@
-# PARALLAX ARM // Autonomous Farm Operations System
+# PARALLAX ARM: Autonomous Farm Operations System
 
-> **Problem Statement 1 — The Autonomous Farm Operations System**  
-> Built by **Team Parallax** for Alta Hackoween 2026.
-
-An **Agricultural Resource Management (ARM) Command Center** powered by **Next.js 16**, **PostgreSQL**, **Drizzle ORM**, and **Gemini 2.5 Flash Structured Outputs**. Designed to avoid the hackathon trap of sprawling CRUD apps, Parallax ARM delivers a **deterministic, visually arresting state machine** where judges and operators watch unexpected crises trigger autonomous multi-farm resource reallocation in real-time.
+PARALLAX ARM (Agricultural Resource Management) is an operations management platform for distributed agricultural enterprises. Built with Next.js 16, TypeScript, Drizzle ORM, and PostgreSQL, the system coordinates field machinery, agronomist field crews, and scheduled field tasks across multiple geographic sectors. It integrates environmental telemetry monitoring, conflict detection, and human-in-the-loop (HITL) incident resolution.
 
 ---
 
-## ⚡ Key Highlights & Architecture
+## Core Capabilities
 
-- **Single-Screen "Mission Control" Cockpit**: Dark glassmorphic interface (`#090A0F` canvas, translucent glass cards, neon tactical indicators) built with Tailwind CSS.
-- **2D Tactical Vector Map**: SVG schematic connecting *Sector Alpha* and *Sector Beta* via active transit corridors. Renders pulsing dashed amber Bezier curves during AI proposals and solid emerald animated transit lines upon manager dispatch.
-- **Deterministic Chaos Injector (God Mode)**: 1-click stage-ready triggers for:
-  - 🌧️ **Flash Storm** (`WEATHER_WEBHOOK`) — halts vulnerable chemical tasks.
-  - 🍂 **Fungal Blight CV** (`CV_DISEASE_REPORT`) — multimodal leaf lesion inspection & cross-farm sprayer routing.
-  - 🔧 **Tractor Hydraulic Failure** (`EQUIPMENT_FAILURE`) — immediate backup machinery reallocation.
-- **Multimodal AI Reasoning Engine (Gemini 2.5 Flash)**:
-  - Strict `responseSchema` generating transactional database diffs (`PAUSE_TASK`, `CREATE_TASK`, `REASSIGN_RESOURCE`).
-  - Strict conflict rules: Weather Wash-Off prevention, Cross-Farm Resource Borrowing, and Zero Double-Booking.
-  - Built-in zero-latency deterministic fallback if API keys or quotas are unavailable.
-- **Human-in-the-Loop (HITL) Incident Diff Queue**:
-  - Git-diff style previews of physical mutations:
-    - 🔴 `PAUSE_TASK` — Halts tasks to prevent chemical runoff or equipment damage.
-    - 🟡 `REASSIGN_RESOURCE` — Reroutes specialized machinery across sectors.
-    - 🟢 `CREATE_TASK` — Dispatches emergency intervention protocols.
-  - 1-Click operator execution (`/api/tickets/[id]/approve`) or executive override (`/api/tickets/[id]/reject`).
-- **Edge Worker Mobile Viewport**: Embedded live mobile phone emulator showing active field crew assignments, schedule shifts, and instant red alert flashes when tasks are paused by AI.
-- **Live Telemetry Event Log**: High-frequency real-time event streaming via Server-Sent Events (SSE) rendered in monospace telemetry format.
+### 1. Centralized Multi-Farm Operations
+Agricultural operations are distributed across independent geographic sectors with distinct microclimates, soil properties, and equipment stations:
+- Sector-level tracking of acreage, soil pH, moisture thresholds, and irrigation infrastructure (Center Pivot, Drip Micro, Flood Gate, Aerial Spraying).
+- Live environmental status per sector (temperature, wind velocity, precipitation alerts).
+- Dynamic cross-farm resource reallocation and transit routing.
+
+### 2. Fleet and Crew Resource Management
+Replaces card grids with an operational table for real-time fleet oversight:
+- Tracks machinery implements (tractors, sprayers, harvesters, agricultural drones) and field agronomists.
+- Real-time dynamic job assignment linked directly to the task scheduler.
+- Operational status state transitions: `IDLE`, `BUSY`, `IN_MAINTENANCE`, `EN_ROUTE`.
+- Inline status updating controls for rapid dispatch and servicing.
+- Cross-farm redeployment selector to reassign assets between physical sectors.
+
+### 3. Productivity Work Orders and Dispatch
+A structured operational scheduler designed around productivity workflows:
+- Attribute schema: Priority order (`P1 Urgent`, `P2 High`, `P3 Normal`, `P4 Low`), Task Name, Field Section, Target Hectares, Category, Scheduled Time Window, Responsible Resource, and Status.
+- Inline schedule editing with instant persistence.
+- Intelligent slot-based employee assignment: Filters workers stationed at the target farm and flags busy time slots to prevent double-booking.
+- Environmental conflict alerts: Warns against chemical wash-off during rain alerts or soil compaction during saturated moisture conditions.
+- AI Override and Resume: Operators can review AI pause conditions and resume operations when field conditions permit.
+- Dual-tier verification workflow:
+  1. Worker marks a task as done (`Mark Done`), recording a completion timestamp and transitioning the order to `Needs Owner Verification`.
+  2. Owner inspects field results and either confirms completion (`Verify & Approve`) or returns it to progress (`Reject Claim`) with audit notes.
+
+### 4. Human-in-the-Loop (HITL) Incident Queue
+- Simulates external operational disruptions: flash storms, fungal blight outbreaks via leaf image analysis, and mechanical equipment failures.
+- Evaluates operational disruptions using multimodal reasoning (Google Gemini) with deterministic rule fallbacks.
+- Proposes atomic mutation diffs (`PAUSE_TASK`, `REASSIGN_RESOURCE`, `CREATE_TASK`).
+- Requires explicit operator authorization (`Approve`) or dismissal (`Reject`) before applying state changes.
+
+### 5. Edge Worker Mobile Viewport
+- Mobile interface emulator for field workers and machine operators.
+- Synchronizes assigned work orders, active routes, and real-time alerts.
+- Provides direct completion submission that feeds into the owner verification pipeline.
 
 ---
 
-## 📐 Layout Architecture (3-Pane Cockpit)
+## Repository Structure
 
 ```
-+-----------------------------------------------------------------------------------+
-| [● LIVE] PARALLAX ARM // AUTONOMOUS FARM OPERATIONS        [Reset Demo] [God Mode]|
-+----------------------+-------------------------------------+----------------------+
-| PANE 1: TELEMETRY    | PANE 2: CROSS-FARM COMMAND CENTER   | PANE 3: EDGE WORKER  |
-| & CHAOS INJECTOR     |                                     | & AUDIT TERMINAL     |
-|                      |  +-------------------------------+  |  +----------------+  |
-| [Sector Alpha]       |  |   2D TACTICAL VECTOR MAP      |  |  | 📱 WORKER VIEW |  |
-| Moisture: 44% [Mono] |  |  [Farm Alpha] ===tractors===> |  |  | Assigned:      |  |
-| Weather: STORM ALERT |  |                  [Farm Beta]  |  |  | Unit 04 Tractor|  |
-|                      |  +-------------------------------+  |  |                |  |
-| [Sector Beta]        |                                     |  | ⚡ REROUTED:   |  |
-| Moisture: 28% [Mono] |  +-------------------------------+  |  | Drive to Beta  |  |
-| Weather: CLEAR       |  | HITL INCIDENT DIFF QUEUE      |  |  | Sector by 14:30|  |
-|                      |  | ⚠️ Fungal Blight + Rain Clash |  |  +----------------+  |
-| -------------------- |  |                               |  |                      |
-| ⚡ TRIGGER CRISIS:   |  | • PAUSE: Alpha Irrigation     |  |  +----------------+  |
-| [🌧️ Flash Storm]     |  | • REROUTE: Tractor 02 (A → B) |  |  | >_ LIVE LOGS   |  |
-| [🍂 Upload Leaf Img] |  | • CREATE: Emergency Fungicide |  |  | [14:01] Weather|  |
-| [🔧 Tractor Fail]    |  |                               |  |  | [14:02] AI Diff|  |
-|                      |  | [✓ Approve Plan] [✕ Override] |  |  | [14:02] Synced |  |
-|                      |  +-------------------------------+  |  +----------------+  |
-+----------------------+-------------------------------------+----------------------+
+arm-command-center/
+|-- public/                             # Static web assets and icons
+|-- src/
+|   |-- app/                            # Next.js App Router pages and API routes
+|   |   |-- layout.tsx                  # Root HTML shell and font configurations
+|   |   |-- page.tsx                    # Main operations command center container
+|   |   |-- globals.css                 # Global styling rules and design tokens
+|   |   |-- api/                        # REST API routing layer
+|   |       |-- events/
+|   |       |   `-- ingest/             # Incident simulation webhook ingestion
+|   |       |-- farms/                  # Farm sector CRUD endpoints
+|   |       |   |-- route.ts            # GET all sectors / POST create sector
+|   |       |   |-- create/             # Alternative creation endpoint
+|   |       |   `-- [id]/
+|   |       |       |-- route.ts        # GET sector details and assigned assets
+|   |       |       |-- update/         # POST update sector parameters
+|   |       |       `-- delete/         # POST delete sector
+|   |       |-- resources/              # Fleet and worker CRUD endpoints
+|   |       |   |-- route.ts            # GET all resources / POST create resource
+|   |       |   |-- create/             # Resource deployment endpoint
+|   |       |   `-- [id]/
+|   |       |       |-- route.ts        # GET resource details
+|   |       |       |-- update/         # POST update status, farm, or telemetry
+|   |       |       `-- delete/         # POST retire resource
+|   |       |-- tasks/                  # Work orders CRUD endpoints
+|   |       |   |-- route.ts            # GET all tasks / POST create task
+|   |       |   |-- create/             # Task creation endpoint
+|   |       |   `-- [id]/
+|   |       |       |-- route.ts        # GET task details
+|   |       |       |-- update/         # POST update status, schedule, or verification
+|   |       |       `-- delete/         # POST cancel task
+|   |       |-- tickets/                # HITL incident proposals
+|   |       |   |-- route.ts            # GET active proposal tickets
+|   |       |   `-- [id]/
+|   |       |       |-- approve/        # POST apply proposed atomic mutations
+|   |       |       |-- reject/         # POST reject proposal
+|   |       |       `-- delete/         # POST remove ticket
+|   |       |-- state/                  # GET full composite database snapshot
+|   |       |-- logs/                   # GET telemetry audit log stream
+|   |       `-- reset/                  # POST reseed database to default state
+|   |-- components/                     # Modular interface components
+|   |   |-- AddFarmModal.tsx            # Modal dialogue to register new sectors
+|   |   |-- AddTaskModal.tsx            # Modal dialogue for work orders with slot checks
+|   |   |-- CrisisCard.tsx              # Incident injection controls
+|   |   |-- EdgeTrackerCard.tsx         # Active worker field telemetry card
+|   |   |-- FleetGauge.tsx              # Telematics fuel/battery display widget
+|   |   |-- LeafUploader.tsx            # Multimodal image upload for pathology assays
+|   |   |-- LiveTerminal.tsx            # Monospace operational audit log feed
+|   |   |-- Sidebar.tsx                 # Navigation sidebar and operational metrics
+|   |   |-- TacticalMap.tsx             # 2D topological SVG map with transit routes
+|   |   |-- TeamCollaboration.tsx       # Operator roster summary widget
+|   |   |-- TelemetryPane.tsx           # Sector environmental cards and alerts
+|   |   |-- TicketQueue.tsx             # HITL mutation diff cards with approval actions
+|   |   |-- TopBar.tsx                  # Global header, search, and system triggers
+|   |   |-- WorkerPhone.tsx             # Embedded field technician mobile interface
+|   |   `-- views/                      # Dedicated view modes
+|   |       |-- TasksView.tsx           # Productivity table work orders view
+|   |       |-- FleetView.tsx           # Machinery fleet operational table
+|   |       |-- SectorsView.tsx         # Sector administrator view
+|   |       |-- CrewView.tsx            # Field personnel roster view
+|   |       |-- TacticalMapView.tsx     # Fullscreen geographic schematic
+|   |       |-- IncidentsView.tsx       # HITL incident management view
+|   |       |-- ChaosView.tsx           # Crisis simulation panel
+|   |       |-- TerminalView.tsx        # Fullscreen system log console
+|   |       `-- WorkerView.tsx          # Standalone field worker viewport
+|   |-- db/                             # Persistence layer
+|   |   |-- schema.ts                   # Drizzle PostgreSQL schema definitions
+|   |   |-- actions.ts                  # Typed database query and mutation functions
+|   |   |-- index.ts                    # PostgreSQL connection pooler and Drizzle client
+|   |   |-- migrate.ts                  # Schema migration execution script
+|   |   `-- seed.ts                     # Enterprise multi-farm seed dataset
+|   `-- lib/
+|       `-- orchestrate.ts              # Gemini structured reasoning and fallback logic
+|-- .env.example                        # Template for environment configuration
+|-- drizzle.config.ts                   # Drizzle ORM CLI configuration
+|-- next.config.ts                      # Next.js build and compiler configuration
+|-- package.json                        # Project dependencies and script definitions
+|-- postcss.config.mjs                  # PostCSS plugins configuration
+|-- tailwind.config.ts                  # Tailwind CSS styling configuration
+`-- tsconfig.json                       # TypeScript compiler options
 ```
 
 ---
 
-## 🌐 Centralized Multi-Farm Operations & Complete REST CRUD
+## REST API Reference
 
-Parallax ARM centralizes operations for agricultural enterprises running multiple distributed sectors (varied acreage, microclimates, soil compositions, irrigation systems, and appointed fleets).
-
-### Full REST CRUD API Matrix
-
-| Resource | Method & Route | Purpose |
+### Sectors and Farms
+| Method | Endpoint | Description |
 |---|---|---|
-| **Farms / Sectors** | `GET /api/farms` | List all registered agricultural sectors |
-| | `POST /api/farms` or `/api/farms/create` | Register new farm sector (acreage, soil pH, moisture range, irrigation rig) |
-| | `GET /api/farms/[id]` | Inspect farm details, appointed machinery & active tasks |
-| | `POST /api/farms/[id]/update` | Update telematics, soil targets, or weather status |
-| | `POST /api/farms/[id]/delete` | Decommission and remove sector |
-| **Fleet & Workers** | `GET /api/resources` | List all machinery implements and agronomists (`?farmId=X` filter) |
-| | `POST /api/resources` or `/api/resources/create` | Deploy tractor, harvester, drone, or agronomist to a sector |
-| | `GET /api/resources/[id]` | Inspect resource telematics, battery/fuel, speed, CAN-bus status |
-| | `POST /api/resources/[id]/update` | Reallocate cross-farm (`status: EN_ROUTE`), service/repair, refuel |
-| | `POST /api/resources/[id]/delete` | Retire equipment from operational roster |
-| **Work Orders** | `GET /api/tasks` | List all operational missions (`?farmId=X` filter) |
-| | `POST /api/tasks` or `/api/tasks/create` | Issue scheduled work order with priority and implement assignment |
-| | `GET /api/tasks/[id]` | Retrieve mission parameters and AI reasoning |
-| | `POST /api/tasks/[id]/update` | Update mission status (`SCHEDULED`, `IN_PROGRESS`, `PAUSED_BY_AI`, `COMPLETED`) |
-| | `POST /api/tasks/[id]/delete` | Cancel and delete mission |
-| **HITL Tickets** | `GET /api/tickets` | Query active incident mutation tickets |
-| | `POST /api/tickets/[id]/approve` | 1-Click operator execution of proposed mutations |
-| | `POST /api/tickets/[id]/reject` | Operator override and dismissal of AI recommendations |
-| | `POST /api/tickets/[id]/delete` | Purge ticket from dispatch queue |
-| **Telemetry & Ingestion** | `POST /api/events/ingest` | Ingest weather webhooks, leaf vision assays, or hardware faults |
-| | `GET /api/logs` | Real-time NASA-style event log stream |
-| | `GET /api/state` | Composite ACID state snapshot |
-| | `POST /api/reset` | 1-Click demo state reseed across all locations |
+| `GET` | `/api/farms` | List all registered farm sectors |
+| `POST` | `/api/farms` or `/api/farms/create` | Register a new farm sector |
+| `GET` | `/api/farms/:id` | Fetch sector record, assigned equipment, and active tasks |
+| `POST` | `/api/farms/:id/update` | Update sector parameters, soil target ranges, or weather |
+| `POST` | `/api/farms/:id/delete` | Remove a farm sector |
+
+### Fleet and Crew Resources
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/resources` | List resources (optional `?farmId=:id` query parameter) |
+| `POST` | `/api/resources` or `/api/resources/create` | Deploy machinery or appoint worker |
+| `GET` | `/api/resources/:id` | Retrieve resource telematics, status, and assigned tasks |
+| `POST` | `/api/resources/:id/update` | Update status, reassign farm, or set operational state |
+| `POST` | `/api/resources/:id/delete` | Retire resource from active operations |
+
+### Work Orders
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/tasks` | List work orders (optional `?farmId=:id` query parameter) |
+| `POST` | `/api/tasks` or `/api/tasks/create` | Dispatch a new work order |
+| `GET` | `/api/tasks/:id` | Fetch task details and AI reasoning log |
+| `POST` | `/api/tasks/:id/update` | Update status, scheduled slot, or verification flags |
+| `POST` | `/api/tasks/:id/delete` | Cancel and delete work order |
+
+### Incident Resolution (HITL)
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/tickets` | Query pending mutation proposal tickets |
+| `POST` | `/api/tickets/:id/approve` | Execute proposed mutations in a single transaction |
+| `POST` | `/api/tickets/:id/reject` | Dismiss proposed mutations |
+| `POST` | `/api/tickets/:id/delete` | Purge ticket from queue |
+
+### Telemetry and System State
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/state` | Returns composite state snapshot (farms, resources, tasks, tickets, logs) |
+| `POST` | `/api/events/ingest` | Ingest incident webhooks (weather, disease CV, equipment faults) |
+| `GET` | `/api/logs` | Query chronological operational log entries |
+| `POST` | `/api/reset` | Reseed database to default multi-farm operational state |
 
 ---
 
-## 🛠️ Tech Stack
+## Technical Stack
 
-- **Framework**: Next.js 16 (React 19, App Router)
-- **Styling**: Tailwind CSS, CSS Custom Properties & Animations
-- **Database & ORM**: PostgreSQL, Drizzle ORM
-- **AI Orchestration**: Google Gemini 2.5 Flash (Multimodal & Structured Outputs via `@google/generative-ai`)
-- **Real-Time Data**: Server-Sent Events (SSE) & React State Sync
-- **Language**: TypeScript 5 (Strict Mode)
+- **Application Framework**: Next.js 16 (App Router, Server and Client Components)
+- **Programming Language**: TypeScript 5 (Strict Mode)
+- **Database Layer**: PostgreSQL via Supabase Connection Pooler
+- **Object-Relational Mapping**: Drizzle ORM
+- **Styling**: Tailwind CSS
+- **AI Orchestration**: Google Gemini API (`@google/generative-ai`) with deterministic rule fallback
+- **Connection Protocol**: PostgreSQL pooling with TLS/SSL enabled
 
 ---
 
-## 🚀 Quick Start
+## Getting Started
 
-### 1. Clone & Install Dependencies
+### Prerequisites
+- Node.js 18.18 or higher (Node.js 20+ recommended)
+- Access to a PostgreSQL instance or Supabase project
 
+### 1. Clone Repository and Install Dependencies
 ```bash
 git clone https://github.com/KumarCreator1/alta-hackoween-2026.git
-cd alta-hackoween-2026
+cd alta-hackoween-2026/arm-command-center
 npm install
 ```
 
 ### 2. Configure Environment Variables
-
-Create a `.env` file based on `.env.example`:
-
-```env
-DATABASE_URL=postgresql://postgres:password@localhost:5432/arm_command_center
-GEMINI_API_KEY=your_gemini_api_key_here
+Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
 ```
 
-*(Note: The system includes a built-in deterministic heuristic fallback engine, ensuring full demo functionality even without an active Gemini API key or live Postgres instance).*
+Set the required environment keys in `.env`:
+```env
+# PostgreSQL connection string (use IPv4 pooler for hosted instances such as Supabase)
+DATABASE_URL=postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
+SUPA_DATABASE_URL=postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:5432/postgres
 
-### 3. Run Development Server
+# Supabase API Credentials
+NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT_REF].supabase.co
+SUPA_PROJECT_URL=https://[PROJECT_REF].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[ANON_KEY]
+SUPA_PUBLISHABLE_KEY=[ANON_KEY]
 
+# Google Gemini API
+GEMINI_API_KEY=[GEMINI_API_KEY]
+```
+
+### 3. Initialize Database Schema and Seed Data
+```bash
+npx tsx src/db/seed.ts
+```
+
+### 4. Run Development Server
 ```bash
 npm run dev
 ```
+Navigate to `http://localhost:3000` in your browser.
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### 4. Build for Production
-
+### 5. Build for Production
 ```bash
 npm run build
 npm start
----
-## 👥 Team Parallax
-
-- **Vicky Kumar** & Team Parallax
-- Built for **Alta Hackoween 2026**
+```
