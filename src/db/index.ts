@@ -5,7 +5,11 @@ import * as schema from './schema';
 const connectionString = process.env.DATABASE_URL || process.env.SUPA_DATABASE_URL;
 
 // Supabase and remote PostgreSQL endpoints require SSL
-const isRemote = connectionString?.includes('supabase.co') || connectionString?.includes('sslmode=require');
+const isRemote =
+  connectionString?.includes('supabase') ||
+  connectionString?.includes('pooler') ||
+  connectionString?.includes('sslmode=require') ||
+  !connectionString?.includes('localhost');
 
 const pool = new Pool({
   connectionString,
