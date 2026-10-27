@@ -1,19 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { IncidentTicket, ProposedMutation } from '@/db/schema';
+import type { Ticket, ProposedMutation } from '@/db/schema';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface TicketQueueProps {
-  tickets: IncidentTicket[];
-  onApprove: (id: number) => Promise<void>;
-  onReject: (id: number) => Promise<void>;
+  tickets: Ticket[];
+  onApprove: (ticketId: number) => Promise<void>;
+  onReject: (ticketId: number) => Promise<void>;
 }
 
-export default function TicketQueue({
-  tickets,
-  onApprove,
-  onReject,
-}: TicketQueueProps) {
+export default function TicketQueue({ tickets, onApprove, onReject }: TicketQueueProps) {
   const [actingId, setActingId] = useState<number | null>(null);
 
   const handleAction = async (id: number, action: 'approve' | 'reject') => {
@@ -30,103 +27,93 @@ export default function TicketQueue({
 
   if (pendingTickets.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mb-3">
-          ✓
-        </div>
-        <h4 className="text-sm font-bold text-gray-800">All Operations Nominal</h4>
-        <p className="text-xs text-gray-500 max-w-xs mt-1">
-          No active crisis tickets pending approval. Trigger a simulated event from the Chaos Injector to test AI orchestration.
+      <div className="h-full flex flex-col items-center justify-center p-6 text-center border border-dashed border-stone-200 rounded-lg">
+        <CheckCircle2 className="w-8 h-8 text-emerald-600 mb-2" />
+        <h4 className="text-xs font-bold text-stone-800">Operational Continuity Maintained</h4>
+        <p className="text-[11px] text-stone-500 max-w-xs mt-1">
+          Zero active incident tickets pending operator sign-off. Telemetry monitoring nominal across all sectors.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3 overflow-y-auto max-h-[340px] pr-1">
+    <div className="space-y-4">
       {pendingTickets.map((ticket) => {
-        const isCritical = ticket.severity === 'CRITICAL';
-        const isDispatched = ticket.status === 'DISPATCHED';
-        const mutations = (ticket.proposedMutations || []) as ProposedMutation[];
+        const mutations = (ticket.proposedMutations as ProposedMutation[]) || [];
+        const isDispatched = ticket.status === 'RESOLVED';
 
         return (
           <div
             key={ticket.id}
-            className={`p-4 rounded-2xl border transition-all ${
-              isDispatched
-                ? 'bg-emerald-50/50 border-emerald-200'
-                : isCritical
-                ? 'bg-red-50/40 border-red-200'
-                : 'bg-amber-50/40 border-amber-200'
-            }`}
+            className="p-4 rounded-lg border border-stone-300 bg-white space-y-3 shadow-2xs"
           >
-            {/* Header */}
-            <div className="flex items-start justify-between gap-3 mb-2.5">
-              <div className="flex items-center gap-2">
-                <span
-                  className={`text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wider ${
-                    isCritical
-                      ? 'bg-red-500 text-white'
-                      : 'bg-amber-500 text-white'
-                  }`}
-                >
-                  {ticket.severity} INCIDENT #{ticket.id}
-                </span>
-                <span className="text-xs font-semibold text-gray-500">
-                  Sector {ticket.affectedFarmId === 1 ? 'Alpha' : 'Beta'}
-                </span>
+            {/* Ticket Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${
+                      ticket.severity === 'CRITICAL'
+                        ? 'bg-red-100 text-red-800 border border-red-300'
+                        : ticket.severity === 'HIGH'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : 'bg-stone-100 text-stone-700 border border-stone-300'
+                    }`}
+                  >
+                    {ticket.severity} SEVERITY
+                  </span>
+                  <span className="text-[10px] font-mono text-stone-400">
+                    TICKET #{ticket.id} • SECTOR {ticket.affectedFarmId}
+                  </span>
+                </div>
+                <h4 className="text-xs font-bold text-stone-900 mt-1">{ticket.executiveSummary}</h4>
+                <p className="text-[11px] text-stone-500 font-mono mt-0.5">
+                  Trigger Event: {ticket.triggerType}
+                </p>
               </div>
 
-              <span
-                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                  isDispatched
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-amber-100 text-amber-800'
-                }`}
-              >
-                {ticket.status.replace('_', ' ')}
-              </span>
+              {isDispatched && (
+                <span className="text-[10px] font-bold px-2 py-1 bg-emerald-100 text-emerald-800 rounded font-mono">
+                  EXECUTED
+                </span>
+              )}
             </div>
 
-            {/* AI Executive Summary */}
-            <p className="text-xs font-medium text-gray-800 mb-3 leading-relaxed">
-              {ticket.executiveSummary}
-            </p>
-
-            {/* Git-style Physical Mutation Diff */}
-            <div className="bg-white rounded-xl border border-gray-200/80 p-3 space-y-2 mb-3">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
-                Proposed State Mutations (Diff)
+            {/* Proposed Mutations Diff Table */}
+            <div className="space-y-1.5 bg-stone-50 p-2.5 rounded border border-stone-200">
+              <span className="text-[10px] font-mono font-bold text-stone-500 block uppercase tracking-wider">
+                Proposed State Changes ({mutations.length}):
               </span>
-
-              {mutations.map((m, idx) => {
-                const isPause = m.action === 'PAUSE_TASK';
-                const isReassign = m.action === 'REASSIGN_RESOURCE';
-                const isCreate = m.action === 'CREATE_TASK';
+              {mutations.map((mut, idx) => {
+                const isPause = mut.action === 'PAUSE_TASK';
+                const isReassign = mut.action === 'REASSIGN_RESOURCE';
+                const isCreate = mut.action === 'CREATE_TASK';
 
                 return (
-                  <div key={idx} className="flex items-start gap-2 text-xs">
+                  <div
+                    key={idx}
+                    className="flex items-start gap-2 text-xs py-1 px-2 rounded bg-white border border-stone-200 font-mono"
+                  >
                     <span
-                      className={`font-mono font-bold text-[11px] px-1.5 py-0.5 rounded ${
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 ${
                         isPause
-                          ? 'bg-red-100 text-red-700'
+                          ? 'bg-red-100 text-red-800'
                           : isReassign
-                          ? 'bg-amber-100 text-amber-700'
-                          : 'bg-emerald-100 text-emerald-700'
+                          ? 'bg-amber-100 text-amber-800'
+                          : isCreate
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-stone-100 text-stone-800'
                       }`}
                     >
-                      {isPause ? '− PAUSE' : isReassign ? '~ REROUTE' : '+ CREATE'}
+                      {mut.action}
                     </span>
-                    <div className="flex-1 text-gray-700">
-                      {isCreate && <span className="font-bold">{m.newTaskTitle}</span>}
-                      {isReassign && (
-                        <span>
-                          Resource #{m.resourceId} routed to Farm #{m.toFarmId}
-                        </span>
-                      )}
-                      {isPause && <span>Task #{m.targetId} paused immediately</span>}
-                      <p className="text-[10px] text-gray-500 italic mt-0.5">
-                        ↳ Reason: {m.reason}
+                    <div className="text-[11px] text-stone-700 min-w-0 flex-1">
+                      <div>
+                        {mut.newTaskTitle || (mut.targetId ? `Target ID #${mut.targetId}` : 'Operational adjustment')}
+                      </div>
+                      <p className="text-[10px] text-stone-500 italic mt-0.5">
+                        {mut.reason}
                       </p>
                     </div>
                   </div>
@@ -134,28 +121,25 @@ export default function TicketQueue({
               })}
             </div>
 
-            {/* Manager Action Buttons */}
+            {/* Manager Action Controls */}
             {!isDispatched && (
-              <div className="flex items-center gap-2 justify-end">
+              <div className="flex items-center gap-2 justify-end pt-1">
                 <button
                   onClick={() => handleAction(ticket.id, 'reject')}
                   disabled={actingId === ticket.id}
-                  className="px-4 py-2 text-xs font-semibold rounded-xl border border-gray-300 hover:bg-white text-gray-700 transition-all disabled:opacity-50"
+                  className="px-3 py-1.5 text-xs font-semibold rounded border border-stone-300 hover:bg-stone-50 text-stone-700 transition-colors disabled:opacity-50"
                 >
-                  ✕ Override Plan
+                  Dismiss Plan
                 </button>
                 <button
                   onClick={() => handleAction(ticket.id, 'approve')}
                   disabled={actingId === ticket.id}
-                  className="px-5 py-2 text-xs font-bold rounded-xl bg-[#134E35] hover:bg-[#0E3D29] text-white shadow-sm transition-all disabled:opacity-50 flex items-center gap-1.5"
+                  className="px-4 py-1.5 text-xs font-bold rounded bg-stone-900 hover:bg-stone-800 text-white shadow-2xs transition-colors disabled:opacity-50 flex items-center gap-1.5"
                 >
                   {actingId === ticket.id ? (
                     'Executing...'
                   ) : (
-                    <>
-                      <span>✓</span>
-                      <span>Approve & Dispatch</span>
-                    </>
+                    <span>Approve & Execute Mutations</span>
                   )}
                 </button>
               </div>

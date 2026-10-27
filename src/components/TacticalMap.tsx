@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import type { Farm, Resource, IncidentTicket } from '@/db/schema';
+import type { Farm, Resource, Ticket, ProposedMutation } from '@/db/schema';
 
 interface TacticalMapProps {
   farms: Farm[];
   resources: Resource[];
-  activeTickets: IncidentTicket[];
+  activeTickets: Ticket[];
 }
 
 export default function TacticalMap({
@@ -56,8 +56,8 @@ export default function TacticalMap({
   // Find pending or active cross-farm transfers
   const pendingTransit = activeTickets.flatMap((t) =>
     (t.proposedMutations || [])
-      .filter((m) => m.action === 'REASSIGN_RESOURCE')
-      .map((m) => ({
+      .filter((m: ProposedMutation) => m.action === 'REASSIGN_RESOURCE')
+      .map((m: ProposedMutation) => ({
         mutation: m,
         status: t.status,
         ticketId: t.id,
@@ -72,7 +72,7 @@ export default function TacticalMap({
   return (
     <div className="w-full flex flex-col h-full">
       {/* Schematic Map SVG Container */}
-      <div className="relative w-full h-[310px] bg-gradient-to-b from-stone-50/80 to-white rounded-2xl border border-stone-200/80 overflow-hidden flex items-center justify-center shadow-xs">
+      <div className="relative w-full h-[310px] bg-stone-50 rounded-xl border border-stone-200 overflow-hidden flex items-center justify-center shadow-2xs">
         {/* SVG Schematic */}
         <svg
           viewBox="0 0 760 300"
@@ -84,7 +84,7 @@ export default function TacticalMap({
               <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#E2E8F0" strokeWidth="0.8" strokeOpacity="0.6" />
             </pattern>
             <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
-              <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000000" floodOpacity="0.08" />
+              <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#000000" floodOpacity="0.08" />
             </filter>
           </defs>
 
@@ -102,9 +102,9 @@ export default function TacticalMap({
                 y1={fp.cy}
                 x2={nextFp.cx}
                 y2={nextFp.cy}
-                stroke="#E2E8F0"
-                strokeWidth="2.5"
-                strokeDasharray="6 6"
+                stroke="#CBD5E1"
+                strokeWidth="2"
+                strokeDasharray="5 5"
               />
             );
           })}
@@ -121,22 +121,20 @@ export default function TacticalMap({
                 <path
                   d={pathD}
                   fill="none"
-                  stroke={isApproved ? '#10B981' : '#F59E0B'}
-                  strokeWidth={isApproved ? '3.5' : '2.5'}
-                  strokeDasharray={isApproved ? 'none' : '8 6'}
-                  className={!isApproved ? 'transit-line' : ''}
+                  stroke={isApproved ? '#059669' : '#D97706'}
+                  strokeWidth={isApproved ? '3' : '2'}
+                  strokeDasharray={isApproved ? 'none' : '6 4'}
                 />
 
-                {/* Animated Tractor sliding between sectors */}
+                {/* Animated transit dot along path */}
                 {isApproved && (
                   <g>
-                    <circle r="14" fill="#134E35" filter="url(#shadow)">
+                    <circle r="7" fill="#18181B" filter="url(#shadow)">
                       <animateMotion dur="4s" repeatCount="indefinite" path={pathD} />
                     </circle>
-                    <text fontSize="13" textAnchor="middle" dy="4">
+                    <circle r="3" fill="#10B981">
                       <animateMotion dur="4s" repeatCount="indefinite" path={pathD} />
-                      🚜
-                    </text>
+                    </circle>
                   </g>
                 )}
               </g>
@@ -148,9 +146,9 @@ export default function TacticalMap({
             const targetPos = getPositionByFarmId(res.currentFarmId);
             return (
               <g key={`enroute-${res.id}-${idx}`} transform={`translate(${targetPos.cx + 40}, ${targetPos.cy - 30})`}>
-                <rect x="-35" y="-12" width="70" height="20" rx="10" fill="#134E35" />
-                <text x="0" y="2" textAnchor="middle" fontSize="9" fill="#FFFFFF" fontWeight="bold">
-                  🚜 EN ROUTE
+                <rect x="-35" y="-12" width="70" height="20" rx="4" fill="#18181B" />
+                <text x="0" y="2" textAnchor="middle" fontSize="9" fill="#FFFFFF" fontWeight="bold" fontFamily="monospace">
+                  EN ROUTE
                 </text>
               </g>
             );
@@ -160,37 +158,30 @@ export default function TacticalMap({
           {farmPositions.map((fp) => {
             const farmRes = resources.filter((r) => r.currentFarmId === fp.farm.id);
             const isAlarm = fp.farm.weatherStatus.includes('WARNING') || fp.farm.weatherStatus.includes('STORM');
-            const cropEmoji = fp.farm.cropType?.toLowerCase().includes('corn')
-              ? '🌽'
-              : fp.farm.cropType?.toLowerCase().includes('apple')
-              ? '🍎'
-              : fp.farm.cropType?.toLowerCase().includes('cotton')
-              ? '🌱'
-              : '🌾';
 
             return (
               <g key={`farm-node-${fp.farm.id}`} transform={`translate(${fp.cx}, ${fp.cy})`}>
-                {/* Node Rings */}
+                {/* Node Outer Ring */}
                 <circle
-                  r="46"
+                  r="42"
                   fill="#FFFFFF"
-                  stroke={isAlarm ? '#FCA5A5' : '#E2E8F0'}
-                  strokeWidth={isAlarm ? '3' : '2'}
+                  stroke={isAlarm ? '#F87171' : '#CBD5E1'}
+                  strokeWidth={isAlarm ? '2.5' : '1.5'}
                   filter="url(#shadow)"
                 />
                 <circle
-                  r="38"
-                  fill={isAlarm ? '#FEF2F2' : '#F0FDF4'}
-                  stroke={isAlarm ? '#EF4444' : '#86EFAC'}
-                  strokeWidth="1.5"
+                  r="34"
+                  fill={isAlarm ? '#FEF2F2' : '#F8FAFC'}
+                  stroke={isAlarm ? '#EF4444' : '#E2E8F0'}
+                  strokeWidth="1"
                 />
-                <text y="-8" textAnchor="middle" fontSize="20">
-                  {cropEmoji}
-                </text>
-                <text y="12" textAnchor="middle" className="text-[10px] font-bold fill-stone-900 tracking-tight">
+                <text y="-4" textAnchor="middle" className="text-[11px] font-bold fill-stone-900 tracking-tight font-mono">
                   {fp.farm.code || `SEC-0${fp.farm.id}`}
                 </text>
-                <text y="24" textAnchor="middle" className="text-[8.5px] font-semibold fill-emerald-800">
+                <text y="10" textAnchor="middle" className="text-[9px] font-medium fill-stone-500">
+                  {fp.farm.name.split(' - ')[1] || 'Hub'}
+                </text>
+                <text y="22" textAnchor="middle" className="text-[8.5px] font-semibold fill-emerald-800 font-mono">
                   {farmRes.length} Assets
                 </text>
               </g>
@@ -205,13 +196,13 @@ export default function TacticalMap({
             return (
               <div
                 key={`badge-${f.id}`}
-                className="flex items-center gap-1.5 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-xl border border-stone-200/90 shadow-2xs whitespace-nowrap text-[10px]"
+                className="flex items-center gap-1.5 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded border border-stone-200 shadow-2xs whitespace-nowrap text-[10px]"
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${isWarn ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'}`} />
-                <span className="font-bold text-stone-800">{f.code || f.name.split(' - ')[0]}:</span>
+                <span className={`w-1.5 h-1.5 rounded-full ${isWarn ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                <span className="font-bold text-stone-800 font-mono">{f.code || f.name.split(' - ')[0]}:</span>
                 <span className="font-mono text-emerald-800 font-semibold">{f.soilMoisture}%</span>
                 <span className="text-stone-300">|</span>
-                <span className="text-stone-500 truncate max-w-[90px]">{f.weatherStatus}</span>
+                <span className="text-stone-500 truncate max-w-[110px]">{f.weatherStatus}</span>
               </div>
             );
           })}

@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { Farm, Resource, IncidentTicket } from '@/db/schema';
+import type { Farm, Resource, Ticket } from '@/db/schema';
 import TacticalMap from '@/components/TacticalMap';
+import { Share2 } from 'lucide-react';
 
 interface TacticalMapViewProps {
   farms: Farm[];
   resources: Resource[];
-  activeTickets: IncidentTicket[];
+  activeTickets: Ticket[];
   onTriggerCrisis: (type: string, farmId: number, payload?: Record<string, unknown>) => Promise<void>;
 }
 
@@ -17,72 +18,70 @@ export default function TacticalMapView({
   activeTickets,
   onTriggerCrisis,
 }: TacticalMapViewProps) {
-  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
 
   return (
-    <div className="space-y-6">
-      {/* View Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Tactical Vector Schematic Map</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Real-time cross-farm transit corridor, GPS RTK telemetry, and autonomous tractor routing
+          <h2 className="text-xl font-bold text-stone-900 tracking-tight">Multi-Farm Tactical Topology Map</h2>
+          <p className="text-xs text-stone-500 mt-0.5">
+            Geographic hub schematic, inter-sector transit corridors, and real-time fleet tracking across {farms.length} locations
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex bg-white p-1 rounded-2xl border border-gray-200 shadow-xs text-xs font-bold">
-            {[1, 2, 5].map((spd) => (
+        <div className="flex items-center gap-2">
+          {/* Speed Controls */}
+          <div className="flex items-center gap-1 bg-white p-1 rounded-md border border-stone-300 text-xs font-semibold">
+            {[1, 2, 4].map((spd) => (
               <button
                 key={spd}
                 onClick={() => setSpeedMultiplier(spd)}
-                className={`px-3 py-1.5 rounded-xl transition-all ${
+                className={`px-2.5 py-1 rounded transition-colors ${
                   speedMultiplier === spd
-                    ? 'bg-[#134E35] text-white shadow-xs'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-stone-900 text-white shadow-2xs'
+                    : 'text-stone-600 hover:text-stone-900'
                 }`}
               >
-                {spd}x Simulation
+                {spd}x Rate
               </button>
             ))}
           </div>
 
           <button
-            onClick={() => onTriggerCrisis('CV_DISEASE_REPORT', 2, { disease: 'Late Blight Outbreak' })}
-            className="btn-primary px-4 py-2 text-xs font-bold flex items-center gap-1.5 shadow-sm"
+            onClick={() => onTriggerCrisis('CV_DISEASE_REPORT', farms[1]?.id || 2, { disease: 'Late Blight Outbreak' })}
+            className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold rounded-md shadow-2xs flex items-center gap-1.5 transition-colors"
           >
-            <span>🔀</span>
+            <Share2 className="w-3.5 h-3.5" />
             <span>Simulate Tractor Dispatch</span>
           </button>
         </div>
       </div>
 
       {/* Large Tactical Map Canvas */}
-      <div className="donezo-card p-6 space-y-4">
-        <div className="flex items-center justify-between border-b pb-3">
+      <div className="bg-white border border-stone-300 rounded-lg p-5 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between border-b border-stone-200 pb-2.5">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-dot" />
-            <span className="text-xs font-bold text-gray-900 uppercase tracking-wider font-mono">
+            <span className="w-2 h-2 rounded-full bg-emerald-600" />
+            <span className="text-xs font-bold text-stone-900 uppercase tracking-wider font-mono">
               Vector Map Navigation // Live Tracking
             </span>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-mono text-gray-500">
-            <span>SECTOR ALPHA: [150, 200]</span>
-            <span>•</span>
-            <span>SECTOR BETA: [650, 200]</span>
+          <div className="flex items-center gap-4 text-xs font-mono text-stone-500">
+            <span>CORRIDORS: ACTIVE</span>
+            <span>NODES: {farms.length}</span>
+            <span>FLEET CONNECTED: {resources.length}</span>
           </div>
         </div>
 
-        <div className="min-h-[400px]">
-          <TacticalMap
-            farms={farms}
-            resources={resources}
-            activeTickets={activeTickets}
-          />
-        </div>
+        <TacticalMap
+          farms={farms}
+          resources={resources}
+          activeTickets={activeTickets}
+        />
       </div>
     </div>
   );
 }
-

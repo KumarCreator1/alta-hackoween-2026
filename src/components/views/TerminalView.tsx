@@ -2,49 +2,43 @@
 
 import React, { useState } from 'react';
 import type { EventLog } from '@/db/schema';
+import { Download, Search } from 'lucide-react';
 
 interface TerminalViewProps {
   logs: EventLog[];
+  onRefresh: () => void;
 }
 
 export default function TerminalView({ logs }: TerminalViewProps) {
   const [filterLevel, setFilterLevel] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [autoScroll, setAutoScroll] = useState<boolean>(true);
 
   const filteredLogs = logs.filter((log) => {
     if (filterLevel !== 'ALL' && log.level !== filterLevel) return false;
-    if (searchQuery && !log.message.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return (
+        log.message.toLowerCase().includes(q) ||
+        log.level.toLowerCase().includes(q) ||
+        (log.farmId != null && String(log.farmId).includes(q))
+      );
+    }
     return true;
   });
 
-  const levelColors: Record<string, string> = {
-    INFO: 'text-gray-300',
-    WARN: 'text-amber-400',
-    CRITICAL: 'text-red-400 font-bold',
-    AI: 'text-cyan-400',
-    DISPATCH: 'text-emerald-400 font-semibold',
-  };
-
-  const formatTime = (timestamp: string | Date) => {
-    try {
-      const d = new Date(timestamp);
-      return d.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      });
-    } catch {
-      return '--:--:--';
-    }
+  const levelBadges: Record<string, { bg: string; text: string }> = {
+    INFO: { bg: 'bg-stone-800', text: 'text-stone-300' },
+    WARN: { bg: 'bg-amber-900/60', text: 'text-amber-300' },
+    CRITICAL: { bg: 'bg-red-900/60', text: 'text-red-300' },
+    AI: { bg: 'bg-sky-900/60', text: 'text-sky-300' },
+    DISPATCH: { bg: 'bg-emerald-900/60', text: 'text-emerald-300' },
   };
 
   const handleExportJSON = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(logs, null, 2));
+    const jsonStr = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(logs, null, 2))}`;
     const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `arm-telemetry-${Date.now()}.json`);
+    downloadAnchor.setAttribute('href', jsonStr);
+    downloadAnchor.setAttribute('download', `arm-telemetry-audit-${Date.now()}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -53,37 +47,37 @@ export default function TerminalView({ logs }: TerminalViewProps) {
   return (
     <div className="space-y-4">
       {/* View Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Live Telemetry Terminal Feed</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Mission control event stream, state diff audits, and autonomous dispatches
+          <h2 className="text-xl font-bold text-stone-900 tracking-tight">System Audit & Telemetry Log</h2>
+          <p className="text-xs text-stone-500 mt-0.5">
+            Operational event stream, state diff audits, and autonomous dispatches
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportJSON}
-            className="btn-outline px-3 py-1.5 text-xs font-bold flex items-center gap-1.5"
+            className="px-3 py-1.5 text-xs font-semibold rounded-md border border-stone-300 hover:bg-stone-50 text-stone-700 transition-colors flex items-center gap-1.5"
           >
-            <span>📥</span>
-            <span>Export JSON</span>
+            <Download className="w-3.5 h-3.5 text-stone-600" />
+            <span>Export JSON Audit</span>
           </button>
         </div>
       </div>
 
       {/* Terminal Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-lg border border-stone-200">
         {/* Level Badges */}
         <div className="flex items-center gap-1.5 overflow-x-auto">
           {['ALL', 'INFO', 'DISPATCH', 'AI', 'WARN', 'CRITICAL'].map((lvl) => (
             <button
               key={lvl}
               onClick={() => setFilterLevel(lvl)}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+              className={`px-2.5 py-1 rounded text-xs font-mono font-bold transition-colors ${
                 filterLevel === lvl
-                  ? 'bg-gray-900 text-white shadow-xs'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-stone-900 text-white shadow-2xs'
+                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
               }`}
             >
               {lvl}
@@ -95,56 +89,53 @@ export default function TerminalView({ logs }: TerminalViewProps) {
         <div className="relative w-full sm:w-64">
           <input
             type="text"
-            placeholder="Search log stream..."
+            placeholder="Search log audit stream..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-gray-50 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-gray-900"
+            className="w-full pl-8 pr-3 py-1 bg-stone-50 rounded-md border border-stone-200 text-xs focus:outline-none focus:border-stone-500"
           />
-          <span className="absolute left-2.5 top-2 text-gray-400 text-xs">🔍</span>
+          <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-stone-400" />
         </div>
       </div>
 
       {/* Terminal Console Box */}
-      <div className="rounded-2xl bg-gray-950 text-gray-200 p-5 font-mono text-xs border border-gray-800 shadow-xl min-h-[500px] max-h-[600px] overflow-y-auto space-y-2">
-        <div className="flex items-center justify-between pb-3 border-b border-gray-800 text-[11px] text-gray-500">
-          <span>PARALLAX ARM TELEMETRY LOG // ISO 11783 PROTOCOL</span>
-          <span>{filteredLogs.length} EVENTS RECORDED</span>
+      <div className="rounded-lg bg-stone-950 text-stone-200 p-4 font-mono text-xs border border-stone-800 shadow-2xs min-h-[480px] max-h-[580px] overflow-y-auto space-y-1.5">
+        <div className="flex items-center justify-between pb-2 border-b border-stone-800 text-[10px] text-stone-500">
+          <span>PARALLAX ARM TELEMETRY LOG</span>
+          <span>{filteredLogs.length} ENTRIES</span>
         </div>
 
-        {filteredLogs.map((log, i) => (
-          <div key={`term-${log.id}-${i}`} className="flex items-start gap-3 hover:bg-white/5 py-1 px-2 rounded-lg transition-colors">
-            <span className="text-gray-500 shrink-0 text-[10px]">
-              [{formatTime(log.timestamp)}]
-            </span>
-            <span className="shrink-0">{log.emoji}</span>
-            <span
-              className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
-                log.level === 'CRITICAL'
-                  ? 'bg-red-500/30 text-red-400'
-                  : log.level === 'WARN'
-                  ? 'bg-amber-500/30 text-amber-400'
-                  : log.level === 'DISPATCH'
-                  ? 'bg-emerald-500/30 text-emerald-400'
-                  : log.level === 'AI'
-                  ? 'bg-cyan-500/30 text-cyan-400'
-                  : 'bg-gray-800 text-gray-400'
-              }`}
+        {filteredLogs.map((log) => {
+          const badge = levelBadges[log.level] || levelBadges.INFO;
+          return (
+            <div
+              key={log.id}
+              className="flex items-start gap-2 py-0.5 hover:bg-white/5 rounded px-1 transition-colors"
             >
-              {log.level}
-            </span>
-            <span className={`${levelColors[log.level] || 'text-gray-300'} flex-1 leading-relaxed`}>
-              {log.message}
-            </span>
-          </div>
-        ))}
+              <span className="text-stone-500 shrink-0 text-[10px]">
+                {new Date(log.timestamp).toLocaleTimeString([], { hour12: false })}
+              </span>
+              <span className={`text-[9px] px-1 py-0.2 rounded font-bold shrink-0 ${badge.bg} ${badge.text}`}>
+                {log.level}
+              </span>
+              {log.farmId != null && (
+                <span className="text-[10px] text-stone-500 shrink-0">
+                  SEC-0{log.farmId}
+                </span>
+              )}
+              <span className="text-stone-300 break-words flex-1">
+                {log.message}
+              </span>
+            </div>
+          );
+        })}
 
         {filteredLogs.length === 0 && (
-          <div className="text-center py-12 text-gray-600">
-            No telemetry events matching the current filter.
+          <div className="text-center py-12 text-stone-500">
+            No log entries match the selected filter.
           </div>
         )}
       </div>
     </div>
   );
 }
-

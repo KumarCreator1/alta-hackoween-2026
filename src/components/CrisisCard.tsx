@@ -3,6 +3,7 @@
 import React from 'react';
 import type { Task, Farm } from '@/db/schema';
 import LeafUploader from './LeafUploader';
+import { CloudRain, Bug, Wrench } from 'lucide-react';
 
 interface CrisisCardProps {
   farms: Farm[];
@@ -32,29 +33,24 @@ export default function CrisisCard({
     onRefresh();
   };
 
-  const priorityTasks = tasks.slice(0, 4);
-
   return (
     <div className="space-y-4">
-      {/* 1. Interactive Chaos Injector Dock */}
-      <div className="bg-gradient-to-br from-[#134E35] to-[#0D3826] text-white rounded-2xl p-4 shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <span className="text-base">⚡</span>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-200">
-              Chaos Injector Dock
-            </span>
-          </div>
-          <span className="text-[10px] font-mono bg-white/10 px-2 py-0.5 rounded-md text-emerald-100">
-            GOD MODE ACTIVE
+      {/* 1. Incident Simulator Dock */}
+      <div className="bg-stone-900 text-white rounded-xl p-4 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wider text-stone-200">
+            Environmental Incident Simulator
+          </span>
+          <span className="text-[10px] font-mono bg-white/10 px-2 py-0.5 rounded text-stone-300">
+            Simulation Ready
           </span>
         </div>
 
-        <p className="text-xs text-emerald-100/90 leading-relaxed mb-3">
-          Simulate compound environmental clashing to trigger autonomous cross-farm reallocation.
+        <p className="text-xs text-stone-400 leading-relaxed">
+          Inject compound environmental alerts to trigger autonomous multi-farm reallocation.
         </p>
 
-        {/* 3 Pitch-Winning Chaos Trigger Buttons */}
+        {/* 3 Trigger Buttons */}
         <div className="grid grid-cols-3 gap-2">
           <button
             onClick={() =>
@@ -62,11 +58,11 @@ export default function CrisisCard({
                 condition: 'HEAVY_RAIN_WARNING',
               })
             }
-            className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition-all hover:scale-[1.02]"
+            className="p-2.5 rounded-lg bg-stone-800 hover:bg-stone-700 border border-stone-700 text-left transition-colors flex flex-col justify-between"
           >
-            <div className="text-base mb-1">🌧️</div>
-            <div className="text-[11px] font-bold leading-tight">Flash Storm</div>
-            <div className="text-[9px] text-emerald-200/70 mt-0.5">{alphaLabel}</div>
+            <CloudRain className="w-4 h-4 text-sky-400 mb-1" />
+            <div className="text-[11px] font-bold leading-tight text-white">Rain Alert</div>
+            <div className="text-[9px] text-stone-400 font-mono mt-0.5 truncate">{alphaLabel}</div>
           </button>
 
           <button
@@ -75,11 +71,11 @@ export default function CrisisCard({
                 disease: 'Late Blight Fungus',
               })
             }
-            className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition-all hover:scale-[1.02]"
+            className="p-2.5 rounded-lg bg-stone-800 hover:bg-stone-700 border border-stone-700 text-left transition-colors flex flex-col justify-between"
           >
-            <div className="text-base mb-1">🍂</div>
-            <div className="text-[11px] font-bold leading-tight">Fungal Blight</div>
-            <div className="text-[9px] text-emerald-200/70 mt-0.5">{betaLabel}</div>
+            <Bug className="w-4 h-4 text-amber-400 mb-1" />
+            <div className="text-[11px] font-bold leading-tight text-white">Blight Spore</div>
+            <div className="text-[9px] text-stone-400 font-mono mt-0.5 truncate">{betaLabel}</div>
           </button>
 
           <button
@@ -88,57 +84,22 @@ export default function CrisisCard({
                 failureType: 'HYDRAULIC_FAILURE',
               })
             }
-            className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-left transition-all hover:scale-[1.02]"
+            className="p-2.5 rounded-lg bg-stone-800 hover:bg-stone-700 border border-stone-700 text-left transition-colors flex flex-col justify-between"
           >
-            <div className="text-base mb-1">🔧</div>
-            <div className="text-[11px] font-bold leading-tight">Tractor Fail</div>
-            <div className="text-[9px] text-emerald-200/70 mt-0.5">{alphaLabel} Valve</div>
+            <Wrench className="w-4 h-4 text-red-400 mb-1" />
+            <div className="text-[11px] font-bold leading-tight text-white">Tractor Fault</div>
+            <div className="text-[9px] text-stone-400 font-mono mt-0.5 truncate">{alphaLabel} Valve</div>
           </button>
         </div>
       </div>
 
-      {/* 2. Drag & Drop Leaf Disease Multimodal Uploader */}
-      <div>
-        <LeafUploader onUpload={handleLeafUpload} />
-      </div>
-
-      {/* 3. Priority Task Schedule Preview */}
-      <div className="space-y-2 pt-1">
-        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block px-1">
-          Active Field Operations
+      {/* 2. Foliage Disease Multimodal Uploader */}
+      <div className="space-y-1.5">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">
+          Computer Vision Pathology Assay
         </span>
-
-        {priorityTasks.map((t) => (
-          <div
-            key={t.id}
-            className="flex items-center justify-between p-2.5 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 transition-all text-xs"
-          >
-            <div className="flex items-center gap-2.5 truncate">
-              <span className="w-2 h-2 rounded-full bg-[#134E35]" />
-              <div className="truncate">
-                <span className="font-semibold text-gray-800 truncate block">
-                  {t.title}
-                </span>
-                <span className="text-[10px] text-gray-400 font-mono">
-                  {t.scheduledSlot} • Sector {t.farmId === 1 ? 'Alpha' : 'Beta'}
-                </span>
-              </div>
-            </div>
-            <span
-              className={`text-[9px] font-bold font-mono px-2 py-0.5 rounded-md ${
-                t.status === 'PAUSED_BY_AI'
-                  ? 'bg-red-100 text-red-700'
-                  : t.status === 'IN_PROGRESS'
-                  ? 'bg-amber-100 text-amber-800'
-                  : 'bg-gray-100 text-gray-600'
-              }`}
-            >
-              {t.status.replace('_', ' ')}
-            </span>
-          </div>
-        ))}
+        <LeafUploader onUpload={handleLeafUpload} />
       </div>
     </div>
   );
 }
-

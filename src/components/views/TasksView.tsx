@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import WeatherConstraintMatrix from '@/components/WeatherConstraintMatrix';
 import type { Task, Farm, Resource } from '@/db/schema';
 
 interface TasksViewProps {
@@ -10,6 +11,7 @@ interface TasksViewProps {
   onOpenAddTask: () => void;
   onUpdateTask: (taskId: number, data: Record<string, unknown>) => Promise<void>;
   onDeleteTask: (taskId: number) => Promise<void>;
+  onRefresh?: () => void;
 }
 
 type TaskStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'PAUSED_BY_AI' | 'COMPLETED' | 'CANCELLED';
@@ -28,6 +30,7 @@ export default function TasksView({
   onOpenAddTask,
   onUpdateTask,
   onDeleteTask,
+  onRefresh,
 }: TasksViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFarmFilter, setSelectedFarmFilter] = useState<number | 'ALL'>('ALL');
@@ -36,6 +39,7 @@ export default function TasksView({
   const [viewMode, setViewMode] = useState<'TABLE' | 'GROUPED'>('TABLE');
   const [sortBy, setSortBy] = useState<'PRIORITY' | 'SCHEDULE' | 'NAME'>('PRIORITY');
   const [updatingTaskId, setUpdatingTaskId] = useState<number | null>(null);
+  const [showConstraintMatrix, setShowConstraintMatrix] = useState<boolean>(true);
 
   // Inline editing schedule slot
   const [editingSlotId, setEditingSlotId] = useState<number | null>(null);
@@ -246,6 +250,10 @@ export default function TasksView({
           </button>
         </div>
       </div>
+
+      {showConstraintMatrix && (
+        <WeatherConstraintMatrix farms={farms} tasks={tasks} onRefresh={onRefresh || (() => {})} />
+      )}
 
       {/* Productivity Status Metric Counters */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">

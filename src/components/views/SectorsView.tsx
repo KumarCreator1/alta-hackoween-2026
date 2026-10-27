@@ -250,19 +250,19 @@ export default function SectorsView({
                     onClick={() => handleWeatherChange('Clear Skies, 28°C')}
                     className="p-2.5 rounded-xl border border-stone-200 text-xs font-semibold hover:border-emerald-600 hover:bg-emerald-50/30 transition-all text-left"
                   >
-                    ☀️ Clear & Sunny
+                    Clear & Sunny
                   </button>
                   <button
                     onClick={() => handleWeatherChange('HEAVY_RAIN_WARNING')}
                     className="p-2.5 rounded-xl border border-amber-200 bg-amber-50/50 text-amber-900 text-xs font-semibold hover:border-amber-400 transition-all text-left"
                   >
-                    ⛈️ Heavy Rain Warning
+                    Heavy Rain Warning
                   </button>
                   <button
                     onClick={() => handleWeatherChange('FROST_ALERT_WARNING')}
                     className="p-2.5 rounded-xl border border-blue-200 bg-blue-50/50 text-blue-900 text-xs font-semibold hover:border-blue-400 transition-all text-left"
                   >
-                    ❄️ Frost Alert (-2°C)
+                    Frost Alert (-2°C)
                   </button>
                 </div>
               </div>
@@ -345,7 +345,7 @@ export default function SectorsView({
 
                     {t.aiReasoning && (
                       <p className="text-[10px] text-amber-800/90 italic mt-1.5 bg-amber-50 p-1.5 rounded-lg border border-amber-200">
-                        🤖 AI Note: {t.aiReasoning}
+                        Advisory Note: {t.aiReasoning}
                       </p>
                     )}
                   </div>

@@ -38,7 +38,7 @@ export async function POST(
     // Log operator override
     await addEventLog(
       'WARN',
-      '🛑',
+      '[LOG][LOG]',
       `Operator overrode/rejected Ticket #${ticketId}. Proposed mutations were discarded.`,
       ticketId
     );

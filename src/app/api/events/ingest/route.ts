@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     // 1. Log incoming event
     await addEventLog(
       'INFO',
-      '⚡',
+      '[LOG]',
       `Incoming ${event.type} event on Farm #${event.farmId} (${targetFarm?.name || 'Sector'}): ${JSON.stringify(event.payload)}`
     );
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
 
       await addEventLog(
         'WARN',
-        '⛈️',
+        '[LOG]️',
         `Farm #${targetFarm.id} (${targetFarm.name}) weather status updated to: ${event.payload.condition}`
       );
     }
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     // 4. Call orchestration engine
     await addEventLog(
       'AI',
-      '🤖',
+      '[LOG][LOG]',
       `AI Orchestration Engine analyzing ${event.type} crisis...`
     );
 
@@ -74,14 +74,14 @@ export async function POST(request: NextRequest) {
     // 6. Log AI decision and ticket creation
     await addEventLog(
       aiResult.severity === 'CRITICAL' ? 'CRITICAL' : 'WARN',
-      '🚨',
+      '[LOG][LOG]',
       `[AI TRIAGE] Severity: ${aiResult.severity}. ${aiResult.executiveSummary}`,
       ticket.id
     );
 
     await addEventLog(
       'INFO',
-      '📋',
+      '[LOG][LOG]',
       `Incident Ticket #${ticket.id} staged with ${aiResult.proposedMutations.length} proposed mutation(s). Awaiting operator approval.`,
       ticket.id
     );

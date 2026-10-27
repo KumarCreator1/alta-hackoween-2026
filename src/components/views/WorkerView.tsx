@@ -68,7 +68,7 @@ export default function WorkerView({
         <div className="flex items-center justify-between bg-white/5 p-4 rounded-2xl border border-white/10">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 font-bold text-xl flex items-center justify-center">
-              👷
+              W
             </div>
             <div>
               <div className="text-sm font-bold text-gray-100">{currentWorker?.name}</div>
@@ -85,7 +85,7 @@ export default function WorkerView({
         {enRoute && (
           <div className="bg-amber-500/20 border border-amber-500/50 rounded-2xl p-4 text-xs space-y-2 slide-up">
             <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
-              <span>⚡</span>
+              
               <span>AUTONOMOUS DISPATCH ALERT // CROSS-FARM REALLOCATION</span>
             </div>
             <p className="text-gray-200 leading-relaxed">
@@ -147,7 +147,7 @@ export default function WorkerView({
 
                   {isPaused && (
                     <div className="mt-2 text-xs text-red-300 bg-red-950/60 p-2.5 rounded-xl border border-red-500/30">
-                      ⚠ <strong>AI INTERVENTION:</strong> Spraying halted to prevent chemical wash-off. Stand down until storm clears.
+                      Alert: <strong>AI INTERVENTION:</strong> Spraying halted to prevent chemical wash-off. Stand down until storm clears.
                     </div>
                   )}
 
@@ -166,7 +166,7 @@ export default function WorkerView({
                           onClick={() => onUpdateTaskStatus(t.id, 'COMPLETED')}
                           className="px-4 py-1.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl transition-colors"
                         >
-                          Mark Job Completed ✓
+                          Mark Job Completed 
                         </button>
                       )}
                     </div>

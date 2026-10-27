@@ -18,20 +18,18 @@ export default function LiveTerminal({ logs: initialLogs, onNewLogs }: LiveTermi
     onNewLogsRef.current = onNewLogs;
   }, [onNewLogs]);
 
-  // Sync when initialLogs from parent changes (merge uniquely by ID)
+  // Sync when initialLogs from parent changes
   useEffect(() => {
     if (!initialLogs || initialLogs.length === 0) return;
     setLogs((prev) => {
       const map = new Map<number, EventLog>();
-      // Keep previous
       prev.forEach((l) => map.set(l.id, l));
-      // Overwrite/add incoming
       initialLogs.forEach((l) => map.set(l.id, l));
       return Array.from(map.values()).sort((a, b) => a.id - b.id);
     });
   }, [initialLogs]);
 
-  // SSE Connection for real-time logs (runs ONCE on mount)
+  // SSE Connection for real-time logs
   useEffect(() => {
     let eventSource: EventSource | null = null;
     let reconnectTimeout: NodeJS.Timeout;
@@ -69,7 +67,6 @@ export default function LiveTerminal({ logs: initialLogs, onNewLogs }: LiveTermi
 
         eventSource.onerror = () => {
           eventSource?.close();
-          // Backoff before reconnecting to avoid spamming
           reconnectTimeout = setTimeout(connectSSE, 5000);
         };
       } catch {
@@ -83,7 +80,7 @@ export default function LiveTerminal({ logs: initialLogs, onNewLogs }: LiveTermi
       clearTimeout(reconnectTimeout);
       eventSource?.close();
     };
-  }, []); // Run ONCE on mount
+  }, []);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -92,12 +89,12 @@ export default function LiveTerminal({ logs: initialLogs, onNewLogs }: LiveTermi
     }
   }, [logs]);
 
-  const levelColors: Record<string, string> = {
-    INFO: 'text-gray-400',
-    WARN: 'text-amber-400',
-    CRITICAL: 'text-red-400',
-    AI: 'text-cyan-400',
-    DISPATCH: 'text-emerald-400',
+  const levelBadges: Record<string, { bg: string; text: string }> = {
+    INFO: { bg: 'bg-stone-800', text: 'text-stone-300' },
+    WARN: { bg: 'bg-amber-900/60', text: 'text-amber-300' },
+    CRITICAL: { bg: 'bg-red-900/60', text: 'text-red-300' },
+    AI: { bg: 'bg-sky-900/60', text: 'text-sky-300' },
+    DISPATCH: { bg: 'bg-emerald-900/60', text: 'text-emerald-300' },
   };
 
   const formatTime = (timestamp: string | Date) => {
@@ -114,47 +111,42 @@ export default function LiveTerminal({ logs: initialLogs, onNewLogs }: LiveTermi
     }
   };
 
-  // Sort chronologically by ID ascending
   const displayLogs = [...logs].sort((a, b) => a.id - b.id);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full font-mono">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-[10px] font-semibold tracking-[0.2em] uppercase text-gray-500 font-mono">
-          &gt;_ Live System Log
+      <div className="flex items-center justify-between pb-2 mb-2 border-b border-stone-800 text-[11px] text-stone-400">
+        <span>OPERATIONAL AUDIT STREAM</span>
+        <span className="text-[10px] text-emerald-400 flex items-center gap-1">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> LIVE
         </span>
-        <div className="flex-1 h-px bg-white/5" />
-        <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-live" />
-          <span className="text-[8px] font-mono text-gray-500">STREAM ACTIVE</span>
-        </div>
       </div>
 
       {/* Terminal Body */}
       <div
         ref={scrollRef}
-        className="flex-1 glass-card p-3 overflow-y-auto relative scanlines font-mono text-[11px] leading-relaxed"
+        className="flex-1 bg-stone-950 p-3 rounded-lg overflow-y-auto text-[11px] leading-relaxed border border-stone-800 space-y-1"
       >
-        {displayLogs.map((log, i) => (
-          <div
-            key={`log-${log.id}-${i}`}
-            className={`flex gap-2 py-0.5 ${i === displayLogs.length - 1 ? 'slide-in' : ''}`}
-          >
-            <span className="text-gray-600 shrink-0 text-[10px]">
-              [{formatTime(log.timestamp)}]
-            </span>
-            <span className="shrink-0">{log.emoji}</span>
-            <span className={`${levelColors[log.level] || 'text-gray-400'} break-words`}>
-              {log.message}
-            </span>
-          </div>
-        ))}
-        {/* Cursor */}
-        <div className="flex items-center gap-1 mt-1 text-gray-600">
-          <span className="text-[10px]">$</span>
-          <span className="w-2 h-3.5 bg-gray-500/50 pulse-live" />
-        </div>
+        {displayLogs.map((log, i) => {
+          const badge = levelBadges[log.level] || levelBadges.INFO;
+          return (
+            <div
+              key={`log-${log.id}-${i}`}
+              className="flex items-start gap-2 py-0.5 text-stone-300"
+            >
+              <span className="text-stone-500 shrink-0 text-[10px]">
+                {formatTime(log.timestamp)}
+              </span>
+              <span className={`text-[9px] px-1 py-0.2 rounded font-bold shrink-0 ${badge.bg} ${badge.text}`}>
+                {log.level}
+              </span>
+              <span className="break-words flex-1 text-stone-300">
+                {log.message}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

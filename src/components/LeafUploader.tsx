@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import { useState, useCallback } from 'react';
+import { UploadCloud } from 'lucide-react';
 
 interface LeafUploaderProps {
   onUpload: (base64: string) => Promise<void>;
@@ -12,19 +13,22 @@ export default function LeafUploader({ onUpload }: LeafUploaderProps) {
 
   const handleFile = useCallback(
     async (file: File) => {
-      if (!file.type.startsWith('image/')) return;
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file (JPG, PNG)');
+        return;
+      }
+
       setIsUploading(true);
       try {
         const reader = new FileReader();
-        const base64 = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        await onUpload(base64);
+        reader.onload = async () => {
+          const base64 = reader.result as string;
+          await onUpload(base64);
+          setIsUploading(false);
+        };
+        reader.readAsDataURL(file);
       } catch (err) {
-        console.error('Upload failed:', err);
-      } finally {
+        console.error('File upload failed:', err);
         setIsUploading(false);
       }
     },
@@ -61,19 +65,19 @@ export default function LeafUploader({ onUpload }: LeafUploaderProps) {
       }}
       onDragLeave={() => setIsDragging(false)}
       onClick={handleClick}
-      className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all ${
+      className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${
         isDragging
-          ? 'border-emerald-600 bg-emerald-50/50 scale-[0.99]'
-          : 'border-gray-200 hover:border-emerald-600/50 hover:bg-gray-50/50'
+          ? 'border-stone-800 bg-stone-100'
+          : 'border-stone-300 hover:border-stone-500 hover:bg-stone-50'
       }`}
     >
       <div className="flex flex-col items-center gap-1.5">
-        <span className="text-2xl">🍂</span>
-        <div className="text-xs font-bold text-gray-800">
-          {isUploading ? 'Analyzing Disease via Gemini...' : 'Drop Leaf Image for AI Analysis'}
+        <UploadCloud className="w-6 h-6 text-stone-600" />
+        <div className="text-xs font-bold text-stone-900">
+          {isUploading ? 'Analyzing Foliage Lesions via Vision...' : 'Upload Crop Leaf Image for Pathology Assay'}
         </div>
-        <p className="text-[11px] text-gray-500 max-w-xs">
-          Drag & drop leaf photo or click to browse. Gemini 3.8 Flash detects lesions and drafts spray reallocations.
+        <p className="text-[11px] text-stone-500 max-w-xs">
+          Select or drag leaf photo to identify crop disease (late blight, powdery mildew) and trigger spray reallocations.
         </p>
       </div>
     </div>

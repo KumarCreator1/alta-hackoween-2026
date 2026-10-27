@@ -105,3 +105,5 @@ export type IncidentTicket = typeof incidentTickets.$inferSelect;
 export type NewIncidentTicket = typeof incidentTickets.$inferInsert;
 export type EventLog = typeof eventLogs.$inferSelect;
 export type NewEventLog = typeof eventLogs.$inferInsert;
+
+export type Ticket = IncidentTicket;

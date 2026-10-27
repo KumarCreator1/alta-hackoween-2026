@@ -1,52 +1,37 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { Farm, Resource, IncidentTicket } from '@/db/schema';
+import type { Farm, Resource, Task } from '@/db/schema';
 import LeafUploader from '@/components/LeafUploader';
+import { CloudRain, Bug, Wrench, Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface ChaosViewProps {
   farms: Farm[];
   resources: Resource[];
-  activeTickets: IncidentTicket[];
+  tasks?: Task[];
+  activeTickets?: any[];
   onTriggerCrisis: (type: string, farmId: number, payload?: Record<string, unknown>) => Promise<void>;
-  onApproveTicket: (id: number) => Promise<void>;
-  onRejectTicket: (id: number) => Promise<void>;
+  onApproveTicket?: (id: number) => Promise<void>;
+  onRejectTicket?: (id: number) => Promise<void>;
+  onRefresh?: () => void;
 }
 
 export default function ChaosView({
   farms,
-  resources,
-  activeTickets,
   onTriggerCrisis,
-  onApproveTicket,
-  onRejectTicket,
+  onRefresh,
 }: ChaosViewProps) {
+  const [selectedFarmId, setSelectedFarmId] = useState<number>(farms[0]?.id || 1);
+  const [triggering, setTriggering] = useState(false);
+  const [customAnomaly, setCustomAnomaly] = useState('');
+  const [anomalySeverity, setAnomalySeverity] = useState('HIGH');
+
   const farmAlpha = farms[0];
   const farmBeta = farms[1] || farms[0];
   const farmAlphaId = farmAlpha?.id || 1;
   const farmBetaId = farmBeta?.id || 2;
   const alphaLabel = farmAlpha ? (farmAlpha.code || farmAlpha.name.split(' - ')[0]) : 'Sector Alpha';
   const betaLabel = farmBeta ? (farmBeta.code || farmBeta.name.split(' - ')[0]) : 'Sector Beta';
-
-  const [customType, setCustomType] = useState('WEATHER_WEBHOOK');
-  const [customFarmId, setCustomFarmId] = useState(farmAlphaId);
-  const [customDetails, setCustomDetails] = useState('');
-  const [triggering, setTriggering] = useState(false);
-
-  const handleCustomTrigger = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTriggering(true);
-    try {
-      await onTriggerCrisis(customType, customFarmId, {
-        condition: customDetails || 'Severe Anomaly Detected',
-        disease: customDetails || 'Late Blight Outbreak',
-        failureType: customDetails || 'Hydraulic Valve Seizure',
-      });
-      setCustomDetails('');
-    } finally {
-      setTriggering(false);
-    }
-  };
 
   const handleLeafUpload = async (base64: string) => {
     await onTriggerCrisis('CV_DISEASE_REPORT', farmBetaId, {
@@ -55,148 +40,175 @@ export default function ChaosView({
     });
   };
 
+  const handleCustomTrigger = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customAnomaly.trim()) return;
+    setTriggering(true);
+    try {
+      await onTriggerCrisis('CUSTOM_ANOMALY', selectedFarmId, {
+        description: customAnomaly.trim(),
+        severity: anomalySeverity,
+      });
+      setCustomAnomaly('');
+    } finally {
+      setTriggering(false);
+      onRefresh?.();
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* View Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Chaos Injector Laboratory</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Deterministic crisis triggers & multimodal computer vision triage workbench across {farms.length} sectors
+          <h2 className="text-xl font-bold text-stone-900 tracking-tight">Environmental Anomaly & Risk Simulator</h2>
+          <p className="text-xs text-stone-500 mt-0.5">
+            Deterministic incident triggers and multimodal foliage vision workbench across {farms.length} sectors
           </p>
         </div>
-        <span className="text-xs font-mono font-bold px-3 py-1 bg-amber-100 text-amber-900 rounded-xl border border-amber-300">
-          ⚡ GOD MODE ENGAGED
+        <span className="text-xs font-mono font-bold px-3 py-1 bg-stone-100 text-stone-800 rounded border border-stone-300">
+          Simulation Mode Active
         </span>
       </div>
 
-      {/* 3 Core Hackathon Pitch Triggers */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Trigger 1: Flash Storm */}
-        <div className="donezo-card p-6 flex flex-col justify-between space-y-4 hover:border-blue-400 transition-all">
+      {/* 3 Core Incident Simulation Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Trigger 1: Heavy Rain Warning */}
+        <div className="bg-white border border-stone-300 rounded-lg p-5 flex flex-col justify-between space-y-4 hover:border-stone-500 transition-colors shadow-2xs">
           <div>
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center text-2xl mb-3">
-              🌧️
+            <div className="w-10 h-10 rounded bg-blue-50 text-blue-700 flex items-center justify-center mb-3 border border-blue-200">
+              <CloudRain className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-gray-900">Compound Flash Storm</h3>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              Triggers a sudden <strong>Heavy Rain Warning</strong> on {alphaLabel}. AI will automatically halt chemical spraying & fertilization tasks to prevent pesticide wash-off runoff.
+            <h3 className="text-sm font-bold text-stone-900">Severe Rain Front Ingestion</h3>
+            <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+              Triggers a sudden <strong>Heavy Rain Alert</strong> on {alphaLabel}. The constraint engine will automatically pause chemical spraying and fertilization tasks to prevent runoff.
             </p>
           </div>
           <button
             onClick={() => onTriggerCrisis('WEATHER_WEBHOOK', farmAlphaId, { condition: 'HEAVY_RAIN_WARNING' })}
-            className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2"
+            className="w-full py-2 rounded bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs shadow-2xs transition-colors"
           >
-            <span>Simulate Storm ({alphaLabel})</span>
+            Simulate Rain Alert ({alphaLabel})
           </button>
         </div>
 
         {/* Trigger 2: Fungal Blight CV */}
-        <div className="donezo-card p-6 flex flex-col justify-between space-y-4 hover:border-amber-400 transition-all">
+        <div className="bg-white border border-stone-300 rounded-lg p-5 flex flex-col justify-between space-y-4 hover:border-stone-500 transition-colors shadow-2xs">
           <div>
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center text-2xl mb-3">
-              🍂
+            <div className="w-10 h-10 rounded bg-amber-50 text-amber-700 flex items-center justify-center mb-3 border border-amber-200">
+              <Bug className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-gray-900">Fungal Blight Outbreak</h3>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              Dispatches a <strong>Late Blight CV lesion report</strong> on {betaLabel}. AI detects high-priority infection and commands cross-farm tractor borrowing from {alphaLabel}.
+            <h3 className="text-sm font-bold text-stone-900">Late Blight Outbreak</h3>
+            <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+              Dispatches a <strong>Foliage Pathology report</strong> on {betaLabel}. Triage detects urgent infection and commands cross-farm sprayer borrowing from {alphaLabel}.
             </p>
           </div>
           <button
             onClick={() => onTriggerCrisis('CV_DISEASE_REPORT', farmBetaId, { disease: 'Late Blight Fungus' })}
-            className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2"
+            className="w-full py-2 rounded bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs shadow-2xs transition-colors"
           >
-            <span>Simulate Blight ({betaLabel})</span>
+            Simulate Blight ({betaLabel})
           </button>
         </div>
 
         {/* Trigger 3: Tractor Failure */}
-        <div className="donezo-card p-6 flex flex-col justify-between space-y-4 hover:border-red-400 transition-all">
+        <div className="bg-white border border-stone-300 rounded-lg p-5 flex flex-col justify-between space-y-4 hover:border-stone-500 transition-colors shadow-2xs">
           <div>
-            <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-700 flex items-center justify-center text-2xl mb-3">
-              🔧
+            <div className="w-10 h-10 rounded bg-red-50 text-red-700 flex items-center justify-center mb-3 border border-red-200">
+              <Wrench className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-gray-900">Hydraulic Line Failure</h3>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              Simulates critical mechanical failure on <strong>Machinery Implement</strong> at {alphaLabel}. AI marks asset down and dispatches backup machinery.
+            <h3 className="text-sm font-bold text-stone-900">Implement Hydraulic Fault</h3>
+            <p className="text-xs text-stone-500 mt-1 leading-relaxed">
+              Simulates critical CAN-bus pressure drop on <strong>Machinery Implement</strong> at {alphaLabel}. Flags asset for service and routes standby machinery.
             </p>
           </div>
           <button
             onClick={() => onTriggerCrisis('EQUIPMENT_FAILURE', farmAlphaId, { failureType: 'HYDRAULIC_FAILURE' })}
-            className="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-2"
+            className="w-full py-2 rounded bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs shadow-2xs transition-colors"
           >
-            <span>Simulate Breakdown ({alphaLabel})</span>
+            Simulate Breakdown ({alphaLabel})
           </button>
         </div>
       </div>
 
-      {/* Multimodal Leaf Upload & Custom Injection Form */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-6 donezo-card p-6 space-y-3">
-          <h3 className="text-sm font-bold text-gray-900">Multimodal Computer Vision Inspection</h3>
-          <p className="text-xs text-gray-500">
-            Upload actual crop pathology photos. Gemini 3.8 Flash inspects lesions and computes chemical containment dosages.
+      {/* Multimodal Leaf Image Upload & Custom Anomaly Form */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Leaf Uploader */}
+        <div className="bg-white border border-stone-300 rounded-lg p-5 space-y-3 shadow-2xs">
+          <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+            <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wide">
+              Foliage Pathology Assay (Vision Triage)
+            </h4>
+            <span className="text-[10px] font-mono text-stone-500">Gemini Vision</span>
+          </div>
+          <p className="text-xs text-stone-500">
+            Upload leaf imagery to test lesion detection. Gemini identifies pathogen taxonomy and drafts intervention orders.
           </p>
           <LeafUploader onUpload={handleLeafUpload} />
         </div>
 
-        <div className="lg:col-span-6 donezo-card p-6 space-y-4">
-          <h3 className="text-sm font-bold text-gray-900">Custom Scenario Injector</h3>
-          <form onSubmit={handleCustomTrigger} className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+        {/* Custom Event Injection */}
+        <div className="bg-white border border-stone-300 rounded-lg p-5 space-y-3 shadow-2xs">
+          <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+            <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wide">
+              Custom Agronomic Disturbance
+            </h4>
+            <span className="text-[10px] font-mono text-stone-500">Ad-Hoc Ingestion</span>
+          </div>
+
+          <form onSubmit={handleCustomTrigger} className="space-y-3 text-xs">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">Trigger Event Type</label>
+                <label className="font-semibold text-stone-700 block mb-1">Target Sector:</label>
                 <select
-                  value={customType}
-                  onChange={(e) => setCustomType(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-emerald-600"
+                  value={selectedFarmId}
+                  onChange={(e) => setSelectedFarmId(Number(e.target.value))}
+                  className="w-full p-2 rounded border border-stone-300 bg-stone-50 font-mono"
                 >
-                  <option value="WEATHER_WEBHOOK">Weather Warning</option>
-                  <option value="CV_DISEASE_REPORT">Crop Disease Vision</option>
-                  <option value="EQUIPMENT_FAILURE">Equipment Breakdown</option>
+                  {farms.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.code} - {f.name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label className="text-xs font-bold text-gray-700 block mb-1">Target Sector</label>
+                <label className="font-semibold text-stone-700 block mb-1">Severity Rating:</label>
                 <select
-                  value={customFarmId}
-                  onChange={(e) => setCustomFarmId(parseInt(e.target.value, 10))}
-                  className="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-emerald-600"
+                  value={anomalySeverity}
+                  onChange={(e) => setAnomalySeverity(e.target.value)}
+                  className="w-full p-2 rounded border border-stone-300 bg-stone-50 font-mono"
                 >
-                  {farms.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.name.split(' - ')[0]}
-                    </option>
-                  ))}
+                  <option value="CRITICAL">Critical (Immediate Stop)</option>
+                  <option value="HIGH">High (Priority Surge)</option>
+                  <option value="MEDIUM">Medium (Advisory)</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-700 block mb-1">Anomaly Details</label>
-              <input
-                type="text"
-                placeholder="e.g. Hailstorm alert or Sensor communication blackout"
-                value={customDetails}
-                onChange={(e) => setCustomDetails(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-emerald-600"
+              <label className="font-semibold text-stone-700 block mb-1">Incident Parameters:</label>
+              <textarea
+                rows={2}
+                placeholder="e.g. Center pivot irrigation pressure drop at Pivot 03; soil tension sensor reading zero flow."
+                value={customAnomaly}
+                onChange={(e) => setCustomAnomaly(e.target.value)}
+                className="w-full p-2 rounded border border-stone-300 bg-stone-50 focus:bg-white focus:outline-none"
               />
             </div>
 
-            <div className="flex justify-end pt-2">
-              <button
-                type="submit"
-                disabled={triggering}
-                className="btn-primary px-5 py-2 text-xs font-bold shadow-sm"
-              >
-                {triggering ? 'Invoking AI Engine...' : '⚡ Inject Anomaly into System'}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={triggering || !customAnomaly.trim()}
+              className="w-full py-2 bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white font-semibold text-xs rounded shadow-2xs transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>{triggering ? 'Evaluating Triage...' : 'Inject Disturbance into System'}</span>
+            </button>
           </form>
         </div>
       </div>
     </div>
   );
 }
-

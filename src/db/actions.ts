@@ -147,7 +147,7 @@ export async function createTask(data: {
 
   await addEventLog(
     'INFO',
-    '📋',
+    '[LOG][LOG]',
     `Task created: "${newTask.title}" for Sector #${data.farmId} [Slot: ${data.scheduledSlot}]`
   );
 
@@ -172,7 +172,7 @@ export async function updateTaskStatus(
 
   await addEventLog(
     'DISPATCH',
-    status === 'COMPLETED' ? '✅' : status === 'IN_PROGRESS' ? '🚜' : '⏸️',
+    status === 'COMPLETED' ? '[LOG]' : status === 'IN_PROGRESS' ? '[LOG][LOG]' : '⏸️',
     `Task #${taskId} "${updated?.title || ''}" updated to ${status} (${progressPercent ?? updated?.progressPercent ?? 0}%)`
   );
 
@@ -203,7 +203,7 @@ export async function createResource(data: {
 
   await addEventLog(
     'INFO',
-    '🚜',
+    '[LOG][LOG]',
     `Resource added: "${newRes.name}" (${newRes.type}) assigned to Sector #${data.currentFarmId}`
   );
 
@@ -228,7 +228,7 @@ export async function updateResource(
 
   await addEventLog(
     'DISPATCH',
-    data.status === 'EN_ROUTE' ? '🔀' : '🔧',
+    data.status === 'EN_ROUTE' ? '[LOG][LOG]' : '[LOG][LOG]',
     `Asset #${resourceId} "${updated?.name}" updated: Status=${updated?.status}, Farm=#${updated?.currentFarmId}`
   );
 
@@ -252,7 +252,7 @@ export async function updateFarmConditions(
 
   await addEventLog(
     'INFO',
-    '📡',
+    '[LOG][LOG]',
     `Sector #${farmId} telemetry adjusted: Moisture=${updated?.soilMoisture}%, Weather="${updated?.weatherStatus}"`
   );
 
@@ -313,7 +313,7 @@ export async function createFarm(data: {
 
   await addEventLog(
     'INFO',
-    '🌾',
+    '[LOG][LOG]',
     `New Agricultural Sector established: "${newFarm.name}" (${newFarm.code}) in ${newFarm.region} [${newFarm.acreage} Acres]`
   );
 
@@ -332,7 +332,7 @@ export async function updateFarm(
 
   await addEventLog(
     'INFO',
-    '✏️',
+    '[LOG]️',
     `Sector #${farmId} "${updated?.name}" configuration updated`
   );
 
@@ -347,7 +347,7 @@ export async function deleteFarm(farmId: number): Promise<FullState> {
 
   await addEventLog(
     'WARN',
-    '🗑️',
+    '[LOG][LOG]️',
     `Sector #${farmId} "${deleted?.name || 'Unknown'}" decommissioned and removed from operations`
   );
 
@@ -364,7 +364,7 @@ export async function deleteResource(resourceId: number): Promise<FullState> {
 
   await addEventLog(
     'WARN',
-    '🗑️',
+    '[LOG][LOG]️',
     `Asset #${resourceId} "${deleted?.name || 'Resource'}" retired from fleet`
   );
 
@@ -400,7 +400,7 @@ export async function updateTask(
 
   await addEventLog(
     'DISPATCH',
-    '📋',
+    '[LOG][LOG]',
     `Work order #${taskId} "${updated?.title}" modified [Status: ${updated?.status}, Progress: ${updated?.progressPercent}%]`
   );
 
@@ -415,7 +415,7 @@ export async function deleteTask(taskId: number): Promise<FullState> {
 
   await addEventLog(
     'INFO',
-    '🗑️',
+    '[LOG][LOG]️',
     `Work order #${taskId} "${deleted?.title || 'Task'}" cancelled and deleted`
   );
 
@@ -432,7 +432,7 @@ export async function rejectTicket(ticketId: number): Promise<FullState> {
 
   await addEventLog(
     'WARN',
-    '❌',
+    '[LOG]',
     `Incident Ticket #${ticketId} rejected and dismissed by farm operator.`
   );
 
@@ -446,7 +446,7 @@ export async function deleteTicket(ticketId: number): Promise<FullState> {
 
   await addEventLog(
     'INFO',
-    '🗑️',
+    '[LOG][LOG]️',
     `Incident Ticket #${ticketId} purged from dispatch queue.`
   );
 
@@ -479,7 +479,7 @@ export async function approveTicket(ticketId: number): Promise<FullState> {
 
   await addEventLog(
     'DISPATCH',
-    '✅',
+    '[LOG]',
     `Ticket #${ticketId} approved by operator. Executing ${ticket.proposedMutations.length} mutation(s)...`,
     ticketId,
   );
@@ -522,7 +522,7 @@ export async function approveTicket(ticketId: number): Promise<FullState> {
 
         await addEventLog(
           'AI',
-          '📋',
+          '[LOG][LOG]',
           `New emergency task created: "${newTask.title}" at Farm #${mutation.toFarmId}. Reason: ${mutation.reason}`,
           ticketId,
         );
@@ -557,7 +557,7 @@ export async function approveTicket(ticketId: number): Promise<FullState> {
 
         await addEventLog(
           'DISPATCH',
-          '🔀',
+          '[LOG][LOG]',
           `Resource "${resource?.name ?? `#${mutation.resourceId}`}" reassigned to Farm #${mutation.toFarmId} (EN_ROUTE). Reason: ${mutation.reason}`,
           ticketId,
         );
@@ -568,7 +568,7 @@ export async function approveTicket(ticketId: number): Promise<FullState> {
 
   await addEventLog(
     'INFO',
-    '🏁',
+    '[LOG][LOG]',
     `All mutations for Ticket #${ticketId} executed successfully.`,
     ticketId,
   );

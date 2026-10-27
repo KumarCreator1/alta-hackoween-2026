@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Search, Plus, RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface TopBarProps {
   godMode: boolean;
@@ -30,92 +31,78 @@ export default function TopBar({
   };
 
   return (
-    <header className="h-16 px-8 flex items-center justify-between border-b border-gray-200/80 bg-white/70 backdrop-blur-md sticky top-0 z-30">
-      {/* Left: Working Global Search Bar */}
+    <header className="h-14 px-6 flex items-center justify-between border-b border-stone-200 bg-white sticky top-0 z-30 select-none">
+      {/* Left: Search Bar */}
       <div className="relative w-80">
-        <span className="absolute inset-y-0 left-3 flex items-center text-gray-400 text-sm">
-          🔍
+        <span className="absolute inset-y-0 left-3 flex items-center text-stone-400">
+          <Search className="w-3.5 h-3.5" />
         </span>
         <input
           type="text"
-          placeholder="Search farm, asset, task..."
+          placeholder="Search farm sector, fleet asset, work order..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-9 pr-12 py-2 bg-gray-100/80 hover:bg-gray-100 focus:bg-white text-xs font-medium text-gray-800 placeholder-gray-400 rounded-xl border border-transparent focus:border-emerald-600 focus:outline-none transition-all"
+          className="w-full pl-9 pr-12 py-1.5 bg-stone-50 hover:bg-white focus:bg-white text-xs font-medium text-stone-900 placeholder-stone-400 rounded-md border border-stone-300 focus:border-stone-500 focus:outline-none transition-colors"
         />
-        <span className="absolute inset-y-0 right-2.5 flex items-center">
-          <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-gray-400 bg-white border border-gray-200 rounded-md shadow-xs">
-            ⌘F
+        <span className="absolute inset-y-0 right-2.5 flex items-center pointer-events-none">
+          <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-stone-400 bg-white border border-stone-200 rounded">
+            Cmd+F
           </kbd>
         </span>
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
         {/* Quick Add Task */}
         {onOpenAddTask && (
           <button
             onClick={onOpenAddTask}
-            className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-[#134E35] hover:bg-[#0E3D29] text-white shadow-xs transition-all flex items-center gap-1.5"
+            className="px-3 py-1.5 text-xs font-semibold rounded-md bg-stone-900 hover:bg-stone-800 text-white shadow-2xs transition-colors flex items-center gap-1.5"
           >
-            <span>+</span>
-            <span>New Task</span>
+            <Plus className="w-3.5 h-3.5" />
+            <span>New Work Order</span>
           </button>
         )}
 
-        {/* Quick Trigger Button */}
+        {/* Quick Incident Simulation */}
         <button
           onClick={onTriggerCrisis}
-          className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-all flex items-center gap-1.5"
+          className="px-3 py-1.5 text-xs font-semibold rounded-md border border-stone-300 hover:bg-stone-100 text-stone-800 transition-colors flex items-center gap-1.5"
         >
-          <span>⚡</span>
-          <span>Chaos Injector</span>
+          <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+          <span>Simulate Weather Anomaly</span>
         </button>
 
-        {/* Reset Demo Button */}
+        {/* Reset State Button */}
         <button
           onClick={handleReset}
           disabled={resetting}
-          className="px-3.5 py-1.5 text-xs font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 transition-all disabled:opacity-50 flex items-center gap-1.5"
+          className="px-3 py-1.5 text-xs font-semibold rounded-md border border-stone-300 hover:bg-stone-100 text-stone-700 transition-colors disabled:opacity-50 flex items-center gap-1.5"
         >
-          {resetting ? (
-            <>
-              <svg className="animate-spin h-3.5 w-3.5 text-gray-500" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              <span>Resetting...</span>
-            </>
-          ) : (
-            <>
-              <span>↺</span>
-              <span>Reset Demo</span>
-            </>
-          )}
+          <RefreshCw className={`w-3.5 h-3.5 text-stone-500 ${resetting ? 'animate-spin' : ''}`} />
+          <span>{resetting ? 'Resetting...' : 'Reset Data'}</span>
         </button>
 
-        {/* God Mode Toggle */}
+        {/* Simulation Mode Toggle */}
         <button
           onClick={onToggleGodMode}
-          className={`px-3.5 py-1.5 text-xs font-semibold rounded-xl border transition-all ${
+          className={`px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors ${
             godMode
-              ? 'bg-amber-500 border-amber-500 text-white shadow-sm'
-              : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+              ? 'bg-stone-900 text-white border-stone-900'
+              : 'bg-white border-stone-300 text-stone-600 hover:bg-stone-50'
           }`}
         >
-          God Mode: {godMode ? 'ON' : 'OFF'}
+          Simulation: {godMode ? 'Active' : 'Standby'}
         </button>
 
-        <div className="h-6 w-px bg-gray-200 mx-1" />
-
         {/* User Profile */}
-        <div className="flex items-center gap-2.5 pl-1">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-400 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+        <div className="flex items-center gap-2 pl-2 border-l border-stone-200">
+          <div className="w-7 h-7 rounded-full bg-stone-800 text-white font-bold text-xs flex items-center justify-center">
             VK
           </div>
-          <div className="hidden lg:block text-left">
-            <div className="text-xs font-bold text-gray-900 leading-tight">Vicky Kumar</div>
-            <div className="text-[10px] text-gray-400 font-medium">connect.vickykumar@gmail.com</div>
+          <div className="hidden md:block">
+            <div className="text-xs font-semibold text-stone-900 leading-none">Operations Lead</div>
+            <div className="text-[10px] text-stone-400 font-mono mt-0.5">Farm Central Station</div>
           </div>
         </div>
       </div>

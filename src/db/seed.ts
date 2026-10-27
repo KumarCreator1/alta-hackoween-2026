@@ -80,7 +80,7 @@ const seedFarms: NewFarm[] = [
 ];
 
 export async function seedDatabase(): Promise<void> {
-  console.log('🌱 Seeding centralized multi-farm enterprise database...');
+  console.log('[LOG][LOG] Seeding centralized multi-farm enterprise database...');
 
   // 1. Clear tables in reverse FK order
   await db.delete(eventLogs);
@@ -89,12 +89,12 @@ export async function seedDatabase(): Promise<void> {
   await db.delete(resources);
   await db.delete(farms);
 
-  console.log('  ✓ Cleared legacy demo data');
+  console.log('  [LOG] Cleared legacy demo data');
 
   // 2. Insert Centralized Farms
   const insertedFarms = await db.insert(farms).values(seedFarms).returning();
   const [farm1, farm2, farm3, farm4] = insertedFarms;
-  console.log(`  ✓ Seeded ${insertedFarms.length} enterprise farms across 4 regions`);
+  console.log(`  [LOG] Seeded ${insertedFarms.length} enterprise farms across 4 regions`);
 
   // 3. Insert Appointed Machinery & Agronomic Employees
   const enterpriseResources: NewResource[] = [
@@ -120,7 +120,7 @@ export async function seedDatabase(): Promise<void> {
   ];
 
   const insertedResources = await db.insert(resources).values(enterpriseResources).returning();
-  console.log(`  ✓ Seeded ${insertedResources.length} appointed machinery and field personnel`);
+  console.log(`  [LOG] Seeded ${insertedResources.length} appointed machinery and field personnel`);
 
   // 4. Insert Work Orders across all 4 locations
   const enterpriseTasks: NewTask[] = [
@@ -143,31 +143,31 @@ export async function seedDatabase(): Promise<void> {
   ];
 
   const insertedTasks = await db.insert(tasks).values(enterpriseTasks).returning();
-  console.log(`  ✓ Seeded ${insertedTasks.length} active field operations`);
+  console.log(`  [LOG] Seeded ${insertedTasks.length} active field operations`);
 
   // 5. Insert Initial Telemetry Stream
   const initialLogs: NewEventLog[] = [
-    { level: 'INFO', emoji: '🟢', message: 'PARALLAX ARM Enterprise Command Center — 4 Sectors Online', farmId: null, relatedTicketId: null },
-    { level: 'INFO', emoji: '🌾', message: 'Connected 4 geographically distributed farming hubs (CA, TX, MS, WA)', farmId: null, relatedTicketId: null },
-    { level: 'DISPATCH', emoji: '🚜', message: 'Tractor 8R Unit 01 engaged in Section A3 (Tillage 65% complete)', farmId: farm1.id, relatedTicketId: null },
-    { level: 'DISPATCH', emoji: '🛸', message: 'DJI Agras T30 airborne over Sector Beta (NDVI scan 80% complete)', farmId: farm2.id, relatedTicketId: null },
-    { level: 'DISPATCH', emoji: '🚜', message: 'Case IH Steiger 620 laser leveling Paddy C4 (Sector Gamma)', farmId: farm3.id, relatedTicketId: null },
-    { level: 'AI', emoji: '🤖', message: 'Gemini 3.8 Flash multi-farm reasoning online. Telemetry monitoring nominal.', farmId: null, relatedTicketId: null },
+    { level: 'INFO', emoji: '[LOG][LOG]', message: 'PARALLAX ARM Enterprise Command Center — 4 Sectors Online', farmId: null, relatedTicketId: null },
+    { level: 'INFO', emoji: '[LOG][LOG]', message: 'Connected 4 geographically distributed farming hubs (CA, TX, MS, WA)', farmId: null, relatedTicketId: null },
+    { level: 'DISPATCH', emoji: '[LOG][LOG]', message: 'Tractor 8R Unit 01 engaged in Section A3 (Tillage 65% complete)', farmId: farm1.id, relatedTicketId: null },
+    { level: 'DISPATCH', emoji: '[LOG][LOG]', message: 'DJI Agras T30 airborne over Sector Beta (NDVI scan 80% complete)', farmId: farm2.id, relatedTicketId: null },
+    { level: 'DISPATCH', emoji: '[LOG][LOG]', message: 'Case IH Steiger 620 laser leveling Paddy C4 (Sector Gamma)', farmId: farm3.id, relatedTicketId: null },
+    { level: 'AI', emoji: '[LOG][LOG]', message: 'Gemini 3.8 Flash multi-farm reasoning online. Telemetry monitoring nominal.', farmId: null, relatedTicketId: null },
   ];
 
   await db.insert(eventLogs).values(initialLogs);
-  console.log('  ✓ Seeded enterprise telemetry event stream');
-  console.log('🎉 Enterprise Multi-Farm Database Successfully Initialized!');
+  console.log('  [LOG] Seeded enterprise telemetry event stream');
+  console.log('[LOG][LOG] Enterprise Multi-Farm Database Successfully Initialized!');
 }
 
 if (typeof require !== 'undefined' && require.main === module) {
   seedDatabase()
     .then(() => {
-      console.log('✅ Standalone seed complete');
+      console.log('[LOG] Standalone seed complete');
       process.exit(0);
     })
     .catch((err) => {
-      console.error('❌ Seed failed:', err);
+      console.error('[LOG] Seed failed:', err);
       process.exit(1);
     });
 }

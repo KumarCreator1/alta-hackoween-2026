@@ -11,6 +11,7 @@ import TeamCollaboration from '@/components/TeamCollaboration';
 import FleetGauge from '@/components/FleetGauge';
 import EdgeTrackerCard from '@/components/EdgeTrackerCard';
 import AddTaskModal from '@/components/AddTaskModal';
+import WeatherConstraintMatrix from '@/components/WeatherConstraintMatrix';
 
 // Dedicated Full-Page Views
 import TasksView from '@/components/views/TasksView';
@@ -377,8 +378,7 @@ export default function ARMCommandCenter() {
                     }
                     className="btn-outline px-4 py-2 text-xs flex items-center gap-2 bg-amber-50 border-amber-200 text-amber-900 hover:bg-amber-100"
                   >
-                    <span>⚡</span>
-                    <span>Trigger Crisis</span>
+                    <span>Simulate Anomaly</span>
                   </button>
                 </div>
               </div>
@@ -487,6 +487,8 @@ export default function ARMCommandCenter() {
                   </div>
                 </div>
               </div>
+
+              <WeatherConstraintMatrix farms={farms} tasks={tasks} onRefresh={refreshState} />
 
               {/* Row 2: Tactical Center Grid (8 Cols Left + 4 Cols Right) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -689,6 +691,8 @@ export default function ARMCommandCenter() {
           {activeTab === 'incidents' && (
             <IncidentsView
               tickets={tickets}
+              farms={farms}
+              resources={resources}
               onApproveTicket={handleApprove}
               onRejectTicket={handleReject}
               onTriggerCrisis={handleTriggerCrisis}
@@ -696,7 +700,7 @@ export default function ARMCommandCenter() {
           )}
 
           {/* TAB: TERMINAL LOGS */}
-          {activeTab === 'terminal' && <TerminalView logs={logs} />}
+          {activeTab === 'terminal' && <TerminalView logs={logs} onRefresh={refreshState} />}
 
           {/* TAB: WORKER MOBILE VIEW */}
           {activeTab === 'worker' && (

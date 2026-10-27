@@ -1,6 +1,20 @@
 'use client';
 
 import React from 'react';
+import {
+  LayoutDashboard,
+  ClipboardList,
+  MapPin,
+  Map,
+  Tractor,
+  Users,
+  AlertTriangle,
+  Terminal,
+  Smartphone,
+  Database,
+  Cpu,
+  Layers,
+} from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -16,73 +30,72 @@ interface SidebarProps {
 export default function Sidebar({
   activeTab,
   onTabChange,
-  godMode,
-  onToggleGodMode,
   incidentCount,
   taskCount,
   farmCount,
   fleetCount,
 }: SidebarProps) {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '▦', count: null },
-    { id: 'tasks', label: 'Work Orders', icon: '📋', count: taskCount != null ? `${taskCount}` : null },
-    { id: 'sectors', label: 'Sectors & Farms', icon: '🌾', count: farmCount != null ? `${farmCount}` : null },
-    { id: 'map', label: 'Tactical Map', icon: '🗺️', count: null },
-    { id: 'fleet', label: 'Machinery Fleet', icon: '🚜', count: fleetCount != null ? `${fleetCount}` : null },
-    { id: 'crew', label: 'Field Agronomists', icon: '👷', count: null },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, count: null },
+    { id: 'tasks', label: 'Work Orders', icon: ClipboardList, count: taskCount != null ? `${taskCount}` : null },
+    { id: 'sectors', label: 'Sectors & Farms', icon: MapPin, count: farmCount != null ? `${farmCount}` : null },
+    { id: 'map', label: 'Tactical Map', icon: Map, count: null },
+    { id: 'fleet', label: 'Machinery Fleet', icon: Tractor, count: fleetCount != null ? `${fleetCount}` : null },
+    { id: 'crew', label: 'Field Agronomists', icon: Users, count: null },
   ];
 
-  const crisisItems = [
-    { id: 'chaos', label: 'Chaos Injector', icon: '⚡', highlight: godMode },
-    { id: 'incidents', label: 'HITL Incident Diff', icon: '⚠️', count: incidentCount > 0 ? `${incidentCount}` : null },
-    { id: 'terminal', label: 'Telemetry Log', icon: '📟', count: null },
+  const operationsItems = [
+    { id: 'chaos', label: 'Risk & Weather Sim', icon: AlertTriangle, count: null },
+    { id: 'incidents', label: 'Incident Queue', icon: Layers, count: incidentCount > 0 ? `${incidentCount}` : null },
+    { id: 'terminal', label: 'Audit Trail', icon: Terminal, count: null },
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200/80 flex flex-col justify-between shrink-0 p-5 min-h-screen select-none">
+    <aside className="w-64 bg-white border-r border-stone-200 flex flex-col justify-between shrink-0 p-5 min-h-screen select-none">
       <div className="space-y-6">
-        {/* Brand Logo */}
+        {/* Brand Header */}
         <div className="flex items-center gap-3 px-2">
-          <div className="w-10 h-10 rounded-2xl bg-[#134E35] flex items-center justify-center text-white text-lg shadow-sm">
-            🌱
+          <div className="w-9 h-9 rounded-xl bg-stone-900 flex items-center justify-center text-white font-bold text-xs shadow-xs">
+            ARM
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-base tracking-tight text-gray-900">PARALLAX</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 pulse-dot" />
+              <span className="font-bold text-sm tracking-tight text-stone-900">PARALLAX</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
             </div>
-            <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
-              ARM Command Center
+            <p className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">
+              Operations Center
             </p>
           </div>
         </div>
 
         {/* Section: MENU */}
         <div>
-          <span className="text-[10px] font-bold text-gray-400 tracking-[0.15em] uppercase px-3 block mb-2">
-            Menu
+          <span className="text-[10px] font-bold text-stone-400 tracking-[0.15em] uppercase px-3 block mb-2">
+            Operations
           </span>
           <nav className="space-y-1">
             {menuItems.map((item) => {
               const isActive = activeTab === item.id;
+              const Icon = item.icon;
               return (
                 <button
                   key={item.id}
                   onClick={() => onTabChange(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
                     isActive
-                      ? 'bg-[#134E35] text-white shadow-sm'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      ? 'bg-stone-900 text-white shadow-xs'
+                      : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm">{item.icon}</span>
+                  <div className="flex items-center gap-2.5">
+                    <Icon className="w-4 h-4 shrink-0" />
                     <span>{item.label}</span>
                   </div>
                   {item.count && (
                     <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'
+                      className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-600'
                       }`}
                     >
                       {item.count}
@@ -94,30 +107,31 @@ export default function Sidebar({
           </nav>
         </div>
 
-        {/* Section: CRISIS & AI */}
+        {/* Section: CONTINGENCY & AUDIT */}
         <div>
-          <span className="text-[10px] font-bold text-gray-400 tracking-[0.15em] uppercase px-3 block mb-2">
-            Crisis & AI Operations
+          <span className="text-[10px] font-bold text-stone-400 tracking-[0.15em] uppercase px-3 block mb-2">
+            Incident Control
           </span>
           <nav className="space-y-1">
-            {crisisItems.map((item) => {
+            {operationsItems.map((item) => {
               const isActive = activeTab === item.id;
+              const Icon = item.icon;
               return (
                 <button
                   key={item.id}
                   onClick={() => onTabChange(item.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${
                     isActive
-                      ? 'bg-[#134E35] text-white shadow-sm'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      ? 'bg-stone-900 text-white shadow-xs'
+                      : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm">{item.icon}</span>
+                  <div className="flex items-center gap-2.5">
+                    <Icon className="w-4 h-4 shrink-0" />
                     <span>{item.label}</span>
                   </div>
                   {item.count && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500 text-white">
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
                       {item.count}
                     </span>
                   )}
@@ -127,49 +141,46 @@ export default function Sidebar({
           </nav>
         </div>
 
-        {/* Section: GENERAL */}
+        {/* Section: SYSTEM HEALTH */}
         <div>
-          <span className="text-[10px] font-bold text-gray-400 tracking-[0.15em] uppercase px-3 block mb-2">
-            General
+          <span className="text-[10px] font-bold text-stone-400 tracking-[0.15em] uppercase px-3 block mb-2">
+            Infrastructure
           </span>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between px-3.5 py-2 rounded-xl text-xs text-gray-600">
-              <span className="flex items-center gap-2">
-                <span className="text-sm">🗄️</span> Supabase Cloud
+          <div className="space-y-1 font-mono text-[11px]">
+            <div className="flex items-center justify-between px-3 py-1.5 rounded-lg text-stone-600 bg-stone-50 border border-stone-200">
+              <span className="flex items-center gap-2 font-medium">
+                <Database className="w-3.5 h-3.5 text-stone-500" /> Supabase Pooler
               </span>
-              <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Connected
+              <span className="text-[10px] text-emerald-700 font-bold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" /> OK
               </span>
             </div>
-            <div className="flex items-center justify-between px-3.5 py-2 rounded-xl text-xs text-gray-600">
-              <span className="flex items-center gap-2">
-                <span className="text-sm">🤖</span> Gemini 3.8 AI
+            <div className="flex items-center justify-between px-3 py-1.5 rounded-lg text-stone-600 bg-stone-50 border border-stone-200">
+              <span className="flex items-center gap-2 font-medium">
+                <Cpu className="w-3.5 h-3.5 text-stone-500" /> Gemini Reasoning
               </span>
-              <span className="text-[10px] text-cyan-600 font-semibold">Active</span>
+              <span className="text-[10px] text-stone-700 font-bold">Online</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Promo Card (Inspired by Donezo Mobile App card) */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#134E35] to-[#0A291C] text-white p-4 shadow-md">
-        <div className="flex items-center gap-2 mb-1.5">
-          <div className="w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center text-xs">
-            📱
-          </div>
-          <span className="text-xs font-bold tracking-tight">Field Worker App</span>
+      {/* Field Worker Mobile Navigation Card */}
+      <div className="rounded-xl border border-stone-300 bg-stone-50 p-3.5 space-y-2">
+        <div className="flex items-center gap-2">
+          <Smartphone className="w-4 h-4 text-stone-700" />
+          <span className="text-xs font-bold text-stone-900 tracking-tight">Field Worker Viewport</span>
         </div>
-        <p className="text-[11px] text-emerald-200/80 mb-3 leading-relaxed">
-          Edge telemetry viewport synced to active shifts.
+        <p className="text-[11px] text-stone-500 leading-snug">
+          Mobile emulator for agronomists and operators on active field shifts.
         </p>
         <button
           onClick={() => onTabChange('worker')}
-          className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-bold text-xs rounded-xl transition-colors"
+          className="w-full py-1.5 bg-stone-900 hover:bg-stone-800 text-white font-semibold text-xs rounded-md transition-colors"
         >
-          View Field Mobile
+          Open Mobile Viewport
         </button>
       </div>
     </aside>
   );
 }
-

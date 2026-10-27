@@ -2,7 +2,7 @@ import { pool } from './index';
 import { seedDatabase } from './seed';
 
 export async function migrateAndSeed() {
-  console.log('🔄 Running database schema migration on Supabase...');
+  console.log('[LOG][LOG] Running database schema migration on Supabase...');
 
   const client = await pool.connect();
   try {
@@ -73,7 +73,7 @@ export async function migrateAndSeed() {
         related_ticket_id INTEGER REFERENCES incident_tickets(id)
       );
     `);
-    console.log('✅ Schema migration completed successfully!');
+    console.log('[LOG] Schema migration completed successfully!');
   } finally {
     client.release();
   }
@@ -85,11 +85,11 @@ export async function migrateAndSeed() {
 if (typeof require !== 'undefined' && require.main === module) {
   migrateAndSeed()
     .then(() => {
-      console.log('🎉 Supabase setup complete!');
+      console.log('[LOG][LOG] Supabase setup complete!');
       process.exit(0);
     })
     .catch((err) => {
-      console.error('❌ Migration failed:', err);
+      console.error('[LOG] Migration failed:', err);
       process.exit(1);
     });
 }

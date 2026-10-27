@@ -2,16 +2,14 @@
 
 import React from 'react';
 import type { Resource, Task } from '@/db/schema';
+import { User, Tractor, Shield, Navigation } from 'lucide-react';
 
 interface TeamCollaborationProps {
   resources: Resource[];
   tasks: Task[];
 }
 
-export default function TeamCollaboration({
-  resources,
-  tasks,
-}: TeamCollaborationProps) {
+export default function TeamCollaboration({ resources, tasks }: TeamCollaborationProps) {
   const getResourceTask = (resourceId: number) => {
     return tasks.find(
       (t) => t.assignedResourceId === resourceId && (t.status === 'IN_PROGRESS' || t.status === 'SCHEDULED')
@@ -25,63 +23,59 @@ export default function TeamCollaboration({
     MAINTENANCE: { label: 'Service', bg: 'bg-red-100', text: 'text-red-800' },
   };
 
-  const typeIcons: Record<string, string> = {
-    WORKER: '👷',
-    TRACTOR: '🚜',
-    HARVESTER: '🌾',
-    DRONE: '🛸',
+  const renderIcon = (type: string) => {
+    switch (type) {
+      case 'WORKER':
+        return <User className="w-3.5 h-3.5 text-stone-600" />;
+      case 'TRACTOR':
+        return <Tractor className="w-3.5 h-3.5 text-stone-600" />;
+      case 'HARVESTER':
+        return <Shield className="w-3.5 h-3.5 text-stone-600" />;
+      default:
+        return <Navigation className="w-3.5 h-3.5 text-stone-600" />;
+    }
   };
 
   return (
-    <div className="space-y-3">
-      {resources.map((r) => {
+    <div className="space-y-2">
+      {resources.slice(0, 5).map((r) => {
         const activeTask = getResourceTask(r.id);
         const status = statusConfig[r.status] || statusConfig.IDLE;
-        const icon = typeIcons[r.type] || '📦';
         const isWorker = r.type === 'WORKER';
 
         return (
           <div
             key={r.id}
-            className="flex items-center justify-between p-2.5 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-100"
+            className="flex items-center justify-between p-2 rounded-lg hover:bg-stone-50 transition-colors border border-stone-100"
           >
             {/* Left: Avatar + Details */}
-            <div className="flex items-center gap-3">
-              <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-sm shadow-xs ${
-                  isWorker ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'
-                }`}
-              >
-                {icon}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 rounded bg-stone-100 flex items-center justify-center shrink-0 border border-stone-200">
+                {renderIcon(r.type)}
               </div>
-              <div>
-                <div className="text-xs font-bold text-gray-900 leading-tight flex items-center gap-2">
-                  <span>{r.name}</span>
-                  <span className="text-[10px] font-mono text-gray-400 font-normal">
-                    (Sector {r.currentFarmId === 1 ? 'Alpha' : 'Beta'})
-                  </span>
+              <div className="min-w-0">
+                <div className="text-xs font-semibold text-stone-900 truncate">
+                  {r.name}
                 </div>
-                <p className="text-[11px] text-gray-500 truncate max-w-xs mt-0.5">
-                  {activeTask ? activeTask.title : 'Standby / Optimal fuel level'}
-                </p>
+                <div className="text-[10px] text-stone-500 font-mono truncate">
+                  {activeTask
+                    ? `Job: ${activeTask.title}`
+                    : isWorker
+                    ? 'Station Standby'
+                    : `Implement: ${r.implementStatus || 'Standby'}`}
+                </div>
               </div>
             </div>
 
             {/* Right: Status Pill */}
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono font-medium text-gray-400">
-                {r.fuelOrBattery}%
-              </span>
-              <span
-                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${status.bg} ${status.text}`}
-              >
-                {status.label}
-              </span>
-            </div>
+            <span
+              className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded shrink-0 ${status.bg} ${status.text}`}
+            >
+              {status.label}
+            </span>
           </div>
         );
       })}
     </div>
   );
 }
-
