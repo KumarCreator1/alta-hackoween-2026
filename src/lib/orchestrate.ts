@@ -124,7 +124,7 @@ export async function orchestrate(
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-1.5-flash',
       generationConfig: {
         responseMimeType: 'application/json',
         responseSchema: responseSchema as any,
@@ -144,16 +144,23 @@ export async function orchestrate(
       });
     }
 
-    const result = await model.generateContent({
+    // 4000ms timeout race to prevent serverless function freeze
+    const generatePromise = model.generateContent({
       contents: [{ role: 'user', parts }],
       systemInstruction: SYSTEM_PROMPT,
     });
+
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Gemini API call timed out after 4000ms')), 4000)
+    );
+
+    const result = await Promise.race([generatePromise, timeoutPromise]);
 
     const responseText = result.response.text();
     const parsed = JSON.parse(responseText) as OrchestrateResult;
     return parsed;
   } catch (error) {
-    console.error('Gemini API error, falling back to deterministic logic:', error);
+    console.warn('Gemini API notice, using deterministic fallback logic:', error instanceof Error ? error.message : error);
     return generateFallbackResponse(event, state);
   }
 }
@@ -167,13 +174,13 @@ Payload: ${JSON.stringify(event.payload)}
 CURRENT DATABASE STATE:
 
 FARMS:
-${JSON.stringify(state.farms, null, 2)}
+${JSON.stringify(state?.farms || [], null, 2)}
 
 RESOURCES (Equipment & Workers):
-${JSON.stringify(state.resources, null, 2)}
+${JSON.stringify(state?.resources || [], null, 2)}
 
 ACTIVE TASKS:
-${JSON.stringify(state.tasks, null, 2)}
+${JSON.stringify(state?.tasks || [], null, 2)}
 
 Analyze this crisis and produce the mutation plan.`;
 }
@@ -183,19 +190,24 @@ function generateFallbackResponse(
   state: SystemState
 ): OrchestrateResult {
   const mutations: ProposedMutation[] = [];
-  const affectedFarm = state.farms.find((f: any) => f.id === event.farmId);
-  const otherFarm = state.farms.find((f: any) => f.id !== event.farmId);
+  const farmList = Array.isArray(state?.farms) ? state.farms : [];
+  const taskList = Array.isArray(state?.tasks) ? state.tasks : [];
+  const resourceList = Array.isArray(state?.resources) ? state.resources : [];
+
+  const affectedFarm = farmList.find((f: any) => f.id === event.farmId) || farmList[0];
+  const otherFarm = farmList.find((f: any) => f.id !== event.farmId);
 
   if (event.type === 'WEATHER_WEBHOOK') {
     // Pause all spray/irrigation/fertilizer tasks on the affected farm
-    const tasksToStop = state.tasks.filter(
+    const tasksToStop = taskList.filter(
       (t: any) =>
         t.farmId === event.farmId &&
         t.status === 'SCHEDULED' &&
-        (t.title.toLowerCase().includes('spray') ||
-          t.title.toLowerCase().includes('irrigat') ||
-          t.title.toLowerCase().includes('fertiliz') ||
-          t.title.toLowerCase().includes('foliar'))
+        (t.title?.toLowerCase().includes('spray') ||
+          t.title?.toLowerCase().includes('irrigat') ||
+          t.title?.toLowerCase().includes('fertiliz') ||
+          t.title?.toLowerCase().includes('foliar') ||
+          t.category?.toLowerCase().includes('spray'))
     );
     for (const task of tasksToStop) {
       mutations.push({
@@ -214,22 +226,22 @@ function generateFallbackResponse(
 
     return {
       severity: 'HIGH',
-      executiveSummary: `${event.payload.condition || 'Severe weather alert'} detected on ${affectedFarm?.name || 'target farm'}. AI has paused ${tasksToStop.length} chemical application task(s) to prevent wash-off and created an emergency weather preparation task.`,
+      executiveSummary: `${event.payload.condition || 'Severe weather alert'} detected on ${affectedFarm?.name || 'target farm'}. Paused ${tasksToStop.length} chemical application task(s) to prevent wash-off and created an emergency weather protection order.`,
       proposedMutations: mutations,
     };
   }
 
   if (event.type === 'CV_DISEASE_REPORT') {
     // Find idle sprayer/harvester on other farm to reassign
-    const availableResource = state.resources.find(
+    const availableResource = resourceList.find(
       (r: any) =>
         r.currentFarmId !== event.farmId &&
-        (r.type === 'HARVESTER' || r.type === 'DRONE') &&
+        (r.type === 'HARVESTER' || r.type === 'DRONE' || r.type === 'TRACTOR') &&
         (r.status === 'IDLE' || r.status === 'BUSY')
     );
 
     // Pause low-priority tasks on affected farm
-    const lowPriTasks = state.tasks.filter(
+    const lowPriTasks = taskList.filter(
       (t: any) =>
         t.farmId === event.farmId &&
         t.status === 'SCHEDULED' &&
@@ -249,32 +261,32 @@ function generateFallbackResponse(
         resourceId: availableResource.id,
         fromFarmId: availableResource.currentFarmId,
         toFarmId: event.farmId,
-        reason: `Cross-farm reallocation: ${availableResource.name} routed from ${otherFarm?.name || 'other sector'} to contain ${event.payload.disease || 'disease outbreak'} before it spreads.`,
+        reason: `Cross-farm reallocation: ${availableResource.name} routed from ${otherFarm?.name || 'neighbor farm'} to contain ${event.payload.disease || 'disease outbreak'} before it spreads.`,
       });
     }
 
     mutations.push({
       action: 'CREATE_TASK',
       toFarmId: event.farmId,
-      newTaskTitle: `Emergency Fungicide Application — ${event.payload.disease || 'Disease'} Containment`,
+      newTaskTitle: `Emergency Spraying — ${event.payload.disease || 'Disease'} Containment`,
       resourceId: availableResource?.id,
-      reason: `Immediate copper fungicide application required to contain ${event.payload.disease || 'pathogen'} spread.`,
+      reason: `Immediate crop medicine application required to contain ${event.payload.disease || 'pathogen'} spread.`,
     });
 
     return {
       severity: 'CRITICAL',
-      executiveSummary: `${event.payload.disease || 'Crop disease'} detected on ${affectedFarm?.name || 'target farm'} via computer vision analysis. AI is routing ${availableResource?.name || 'nearest available sprayer'} cross-farm and deploying emergency fungicide protocol.`,
+      executiveSummary: `${event.payload.disease || 'Crop disease'} detected on ${affectedFarm?.name || 'target farm'} via leaf health analysis. Routing ${availableResource?.name || 'nearest available sprayer'} cross-farm and staging emergency crop protection work order.`,
       proposedMutations: mutations,
     };
   }
 
   // EQUIPMENT_FAILURE
   const failedResource = event.payload.equipmentId
-    ? state.resources.find((r: any) => r.id === event.payload.equipmentId)
+    ? resourceList.find((r: any) => r.id === event.payload.equipmentId)
     : null;
 
   // Find replacement from other farm
-  const replacement = state.resources.find(
+  const replacement = resourceList.find(
     (r: any) =>
       r.currentFarmId !== event.farmId &&
       r.type === (failedResource?.type || 'TRACTOR') &&
@@ -282,7 +294,7 @@ function generateFallbackResponse(
   );
 
   // Pause tasks assigned to failed equipment
-  const affectedTasks = state.tasks.filter(
+  const affectedTasks = taskList.filter(
     (t: any) =>
       t.assignedResourceId === event.payload.equipmentId &&
       (t.status === 'SCHEDULED' || t.status === 'IN_PROGRESS')
@@ -301,7 +313,7 @@ function generateFallbackResponse(
       resourceId: replacement.id,
       fromFarmId: replacement.currentFarmId,
       toFarmId: event.farmId,
-      reason: `${replacement.name} routed from ${otherFarm?.name || 'other sector'} to replace failed ${failedResource?.name || 'equipment'}.`,
+      reason: `${replacement.name} routed from ${otherFarm?.name || 'neighbor farm'} to replace failed ${failedResource?.name || 'equipment'}.`,
     });
   }
 
@@ -314,7 +326,7 @@ function generateFallbackResponse(
 
   return {
     severity: 'CRITICAL',
-    executiveSummary: `${event.payload.failureType || 'Equipment failure'} reported on ${failedResource?.name || 'equipment'} at ${affectedFarm?.name || 'target farm'}. AI has paused ${affectedTasks.length} affected task(s) and is routing ${replacement?.name || 'backup equipment'} cross-farm as replacement.`,
+    executiveSummary: `${event.payload.failureType || 'Equipment failure'} reported on ${failedResource?.name || 'equipment'} at ${affectedFarm?.name || 'target farm'}. Paused ${affectedTasks.length} affected task(s) and routing ${replacement?.name || 'backup equipment'} cross-farm as replacement.`,
     proposedMutations: mutations,
   };
 }
